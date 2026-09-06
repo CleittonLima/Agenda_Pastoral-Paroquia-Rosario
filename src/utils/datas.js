@@ -43,6 +43,26 @@ export function dataJaPassou(dataISO) {
   return dataISO < formatarDataLocalISO(new Date());
 }
 
+// Igual a proximaOcorrenciaDiaSemana, mas empurra pra semana seguinte
+// quando o horário de hoje já passou (evita mostrar uma missa das 7h
+// como "próxima" às 20h do mesmo dia).
+export function proximaOcorrenciaDiaSemanaComHora(nomeDia, horaInicio) {
+  const dataBase = proximaOcorrenciaDiaSemana(nomeDia);
+  if (!dataBase || !horaInicio) return dataBase;
+
+  const agora = new Date();
+  if (dataBase !== formatarDataLocalISO(agora)) return dataBase;
+
+  const [h, m] = horaInicio.split(':').map(Number);
+  const minutosHorario = h * 60 + (m || 0);
+  const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
+  if (minutosHorario > minutosAgora) return dataBase;
+
+  const proximaSemana = new Date(agora);
+  proximaSemana.setDate(proximaSemana.getDate() + 7);
+  return formatarDataLocalISO(proximaSemana);
+}
+
 export function linhaDataCompleta(dataISO, horario) {
   if (!dataISO) return '';
   const hora = horario ? ` · ⏰ ${horario}` : '';
