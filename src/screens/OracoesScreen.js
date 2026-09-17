@@ -7,6 +7,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { ORACOES, TERCOS, MISTERIOS, MISTERIO_POR_DIA } from '../data/oracoes';
 import { diaSemanaHoje } from '../utils/datas';
+import { useApp } from '../context/AppContext';
 
 const TEXTO_PAI_NOSSO = 'Pai nosso que estais nos céus,\nsantificado seja o vosso nome;\nvenha a nós o vosso reino;\nseja feita a vossa vontade,\nassim na terra como no céu.\n\nO pão nosso de cada dia nos dai hoje;\nperdoai-nos as nossas ofensas,\nassim como nós perdoamos a quem nos tem ofendido;\ne não nos deixeis cair em tentação,\nmas livrai-nos do mal. Amém.';
 const TEXTO_AVE_MARIA = 'Ave Maria, cheia de graça,\no Senhor é convosco.\nBendita sois vós entre as mulheres\ne bendito é o fruto do vosso ventre, Jesus.\n\nSanta Maria, Mãe de Deus,\nrogai por nós, pecadores,\nagora e na hora de nossa morte. Amém.\n\n(Reze dez vezes)';
@@ -45,6 +46,7 @@ function TextoComParagrafos({ texto, estilo }) {
 
 export default function OracoesScreen() {
   const navigation = useNavigation();
+  const { temaCores } = useApp();
   const [aba, setAba] = useState('lista');
   const [oracaoAberta, setOracaoAberta] = useState(null);
   const [misterioAberto, setMisterioAberto] = useState(null);
@@ -64,8 +66,8 @@ export default function OracoesScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.cabecalho}>
+    <View style={[styles.container, { backgroundColor: temaCores.corBackground }]}>
+      <View style={[styles.cabecalho, { backgroundColor: temaCores.corCabecalho }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.botaoVoltar} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
           <Ionicons name="arrow-back" size={22} color="#fff" />
         </TouchableOpacity>
@@ -74,10 +76,16 @@ export default function OracoesScreen() {
       </View>
 
       <View style={styles.abas}>
-        <TouchableOpacity style={[styles.aba, aba === 'lista' && styles.abaAtiva]} onPress={() => setAba('lista')}>
+        <TouchableOpacity
+          style={[styles.aba, { backgroundColor: temaCores.corCard }, aba === 'lista' && { backgroundColor: temaCores.corBotoes, borderColor: temaCores.corBotoes }]}
+          onPress={() => setAba('lista')}
+        >
           <Text style={[styles.abaTexto, aba === 'lista' && styles.abaTextoAtivo]}>Orações do dia a dia</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.aba, aba === 'terco' && styles.abaAtiva]} onPress={() => setAba('terco')}>
+        <TouchableOpacity
+          style={[styles.aba, { backgroundColor: temaCores.corCard }, aba === 'terco' && { backgroundColor: temaCores.corBotoes, borderColor: temaCores.corBotoes }]}
+          onPress={() => setAba('terco')}
+        >
           <Text style={[styles.abaTexto, aba === 'terco' && styles.abaTextoAtivo]}>Como rezar o Santo Terço</Text>
         </TouchableOpacity>
       </View>
@@ -88,13 +96,13 @@ export default function OracoesScreen() {
           keyExtractor={item => item.id}
           contentContainerStyle={styles.lista}
           renderItem={({ item }) => (
-            <TouchableOpacity style={styles.oracaoItem} onPress={() => setOracaoAberta(item)} activeOpacity={0.75}>
-              <View style={[styles.oracaoIcone, { backgroundColor: (item.cor || '#7A1F2B') + '22' }]}>
+            <TouchableOpacity style={[styles.oracaoItem, { backgroundColor: temaCores.corCard }]} onPress={() => setOracaoAberta(item)} activeOpacity={0.75}>
+              <View style={[styles.oracaoIcone, { backgroundColor: (item.cor || temaCores.corBotoes) + '22' }]}>
                 <Text style={{ fontSize: 18 }}>📿</Text>
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.oracaoNome}>{item.nome}</Text>
-                <Text style={styles.oracaoCategoria}>{item.categoria || 'Oração'}</Text>
+                <Text style={[styles.oracaoNome, { color: temaCores.corTexto }]}>{item.nome}</Text>
+                <Text style={[styles.oracaoCategoria, { color: temaCores.corTextoSecundario }]}>{item.categoria || 'Oração'}</Text>
               </View>
               <Ionicons name="chevron-forward" size={18} color="#a89b8c" />
             </TouchableOpacity>
@@ -109,51 +117,51 @@ export default function OracoesScreen() {
               <View style={styles.carrosselLinha}>
                 {tercosAtivos.length > 1 && (
                   <TouchableOpacity
-                    style={[styles.setaTerco, indiceCarrossel === 0 && styles.setaDesabilitada]}
+                    style={[styles.setaTerco, { backgroundColor: temaCores.corCard }, indiceCarrossel === 0 && styles.setaDesabilitada]}
                     disabled={indiceCarrossel === 0}
                     onPress={() => setIndiceCarrossel(i => Math.max(0, i - 1))}
                   >
-                    <Ionicons name="chevron-back" size={20} color="#2b2320" />
+                    <Ionicons name="chevron-back" size={20} color={temaCores.corTexto} />
                   </TouchableOpacity>
                 )}
-                <View style={styles.carrosselCard}>
-                  <Text style={styles.carrosselNome}>{tercoSelecionado?.nome}</Text>
-                  <Text style={styles.carrosselDesc}>{tercoSelecionado?.descricao}</Text>
+                <View style={[styles.carrosselCard, { backgroundColor: temaCores.corCard }]}>
+                  <Text style={[styles.carrosselNome, { color: temaCores.corTexto }]}>{tercoSelecionado?.nome}</Text>
+                  <Text style={[styles.carrosselDesc, { color: temaCores.corTextoSecundario }]}>{tercoSelecionado?.descricao}</Text>
                   {tercosAtivos.length > 1 && (
                     <View style={styles.pontos}>
                       {tercosAtivos.map((_, i) => (
-                        <View key={i} style={[styles.ponto, i === indiceCarrossel && styles.pontoAtivo]} />
+                        <View key={i} style={[styles.ponto, i === indiceCarrossel && { backgroundColor: temaCores.corBotoes }]} />
                       ))}
                     </View>
                   )}
                 </View>
                 {tercosAtivos.length > 1 && (
                   <TouchableOpacity
-                    style={[styles.setaTerco, indiceCarrossel === tercosAtivos.length - 1 && styles.setaDesabilitada]}
+                    style={[styles.setaTerco, { backgroundColor: temaCores.corCard }, indiceCarrossel === tercosAtivos.length - 1 && styles.setaDesabilitada]}
                     disabled={indiceCarrossel === tercosAtivos.length - 1}
                     onPress={() => setIndiceCarrossel(i => Math.min(tercosAtivos.length - 1, i + 1))}
                   >
-                    <Ionicons name="chevron-forward" size={20} color="#2b2320" />
+                    <Ionicons name="chevron-forward" size={20} color={temaCores.corTexto} />
                   </TouchableOpacity>
                 )}
               </View>
-              <TouchableOpacity style={styles.botaoComecar} onPress={() => comecarTerco(tercoSelecionado)}>
+              <TouchableOpacity style={[styles.botaoComecar, { backgroundColor: temaCores.corBotoes }]} onPress={() => comecarTerco(tercoSelecionado)}>
                 <Text style={styles.botaoComecarTexto}>📿 Começar a rezar</Text>
               </TouchableOpacity>
             </>
           )}
 
-          <View style={styles.secao}>
-            <Text style={styles.secaoTitulo}>Mistérios do Santo Terço</Text>
-            <Text style={styles.secaoSubtexto}>Toque em um mistério para ver os detalhes e os dias em que é rezado.</Text>
+          <View style={[styles.secao, { backgroundColor: temaCores.corCard }]}>
+            <Text style={[styles.secaoTitulo, { color: temaCores.corTexto }]}>Mistérios do Santo Terço</Text>
+            <Text style={[styles.secaoSubtexto, { color: temaCores.corTextoSecundario }]}>Toque em um mistério para ver os detalhes e os dias em que é rezado.</Text>
             <View style={styles.misteriosGrade}>
               {Object.keys(misteriosSeguro).map(chave => {
                 const m = misteriosSeguro[chave];
                 return (
-                  <TouchableOpacity key={chave} style={styles.misterioBtn} onPress={() => setMisterioAberto(chave)}>
+                  <TouchableOpacity key={chave} style={[styles.misterioBtn, { backgroundColor: temaCores.corFundoSuave }]} onPress={() => setMisterioAberto(chave)}>
                     <Text style={{ fontSize: 22 }}>{m.icone}</Text>
-                    <Text style={styles.misterioBtnNome}>{m.nome}</Text>
-                    <Text style={styles.misterioBtnDias}>{m.dias.join(' · ')}</Text>
+                    <Text style={[styles.misterioBtnNome, { color: temaCores.corTexto }]}>{m.nome}</Text>
+                    <Text style={[styles.misterioBtnDias, { color: temaCores.corTextoSecundario }]}>{m.dias.join(' · ')}</Text>
                   </TouchableOpacity>
                 );
               })}
@@ -165,16 +173,16 @@ export default function OracoesScreen() {
       {/* ---- MODAL: ORAÇÃO ---- */}
       <Modal visible={!!oracaoAberta} animationType="fade" transparent onRequestClose={() => setOracaoAberta(null)}>
         <View style={styles.modalFundo}>
-          <View style={styles.modalCaixaCentro}>
+          <View style={[styles.modalCaixaCentro, { backgroundColor: temaCores.corCard }]}>
             <TouchableOpacity style={styles.modalFecharX} onPress={() => setOracaoAberta(null)}>
               <Ionicons name="close" size={20} color="#2b2320" />
             </TouchableOpacity>
             {oracaoAberta && (
               <ScrollView contentContainerStyle={{ paddingTop: 6 }}>
-                <View style={[styles.faixaTopo, { backgroundColor: oracaoAberta.cor || '#7A1F2B' }]} />
-                <Text style={styles.modalCategoria}>{oracaoAberta.categoria || 'Oração'}</Text>
-                <Text style={styles.modalTituloOracao}>{oracaoAberta.nome}</Text>
-                <TextoComParagrafos texto={oracaoAberta.texto} estilo={styles.modalTextoOracao} />
+                <View style={[styles.faixaTopo, { backgroundColor: oracaoAberta.cor || temaCores.corBotoes }]} />
+                <Text style={[styles.modalCategoria, { color: temaCores.corTextoSecundario }]}>{oracaoAberta.categoria || 'Oração'}</Text>
+                <Text style={[styles.modalTituloOracao, { color: temaCores.corTexto }]}>{oracaoAberta.nome}</Text>
+                <TextoComParagrafos texto={oracaoAberta.texto} estilo={[styles.modalTextoOracao, { color: temaCores.corTexto }]} />
               </ScrollView>
             )}
           </View>
@@ -184,16 +192,16 @@ export default function OracoesScreen() {
       {/* ---- MODAL: MISTÉRIO ---- */}
       <Modal visible={!!misterioAberto} animationType="fade" transparent onRequestClose={() => setMisterioAberto(null)}>
         <View style={styles.modalFundo}>
-          <View style={styles.modalCaixaCentro}>
+          <View style={[styles.modalCaixaCentro, { backgroundColor: temaCores.corCard }]}>
             <TouchableOpacity style={styles.modalFecharX} onPress={() => setMisterioAberto(null)}>
               <Ionicons name="close" size={20} color="#2b2320" />
             </TouchableOpacity>
             {misterioAberto && (
               <ScrollView>
-                <Text style={styles.misterioModalTopo}>
+                <Text style={[styles.misterioModalTopo, { color: temaCores.corTexto }]}>
                   {misteriosSeguro[misterioAberto].icone} {misteriosSeguro[misterioAberto].nome}
                 </Text>
-                <Text style={styles.misterioModalDias}>
+                <Text style={[styles.misterioModalDias, { color: temaCores.corTextoSecundario }]}>
                   Rezado: {misteriosSeguro[misterioAberto].dias.join(' e ')}
                 </Text>
                 {misteriosSeguro[misterioAberto].lista.map((item, i) => {
@@ -201,10 +209,10 @@ export default function OracoesScreen() {
                   const reflexao = typeof item === 'object' ? item.reflexao : '';
                   return (
                     <View key={i} style={styles.misterioModalItem}>
-                      <Text style={styles.misterioModalNumero}>{i + 1}º</Text>
+                      <Text style={[styles.misterioModalNumero, { color: temaCores.corBotoes }]}>{i + 1}º</Text>
                       <View style={{ flex: 1 }}>
-                        <Text style={styles.misterioModalNome}>{nome}</Text>
-                        {!!reflexao && <Text style={styles.misterioModalReflexao}>{reflexao}</Text>}
+                        <Text style={[styles.misterioModalNome, { color: temaCores.corTexto }]}>{nome}</Text>
+                        {!!reflexao && <Text style={[styles.misterioModalReflexao, { color: temaCores.corTextoSecundario }]}>{reflexao}</Text>}
                       </View>
                     </View>
                   );
@@ -218,7 +226,7 @@ export default function OracoesScreen() {
       {/* ---- MODAL: TERÇO INTERATIVO ---- */}
       <Modal visible={!!tercoAtivo} animationType="slide" transparent onRequestClose={() => setTercoAtivo(null)}>
         <View style={styles.modalFundo}>
-          <View style={styles.modalTercoCaixa}>
+          <View style={[styles.modalTercoCaixa, { backgroundColor: temaCores.corCard }]}>
             <TouchableOpacity style={styles.modalFecharX} onPress={() => setTercoAtivo(null)}>
               <Ionicons name="close" size={20} color="#2b2320" />
             </TouchableOpacity>
@@ -228,34 +236,35 @@ export default function OracoesScreen() {
                 <View style={styles.tercoCabecalhoFixo}>
                   <View style={styles.progressoBarra}>
                     <View style={[styles.progressoPreenchimento, {
+                      backgroundColor: temaCores.corBotoes,
                       width: `${Math.round((tercoAtivo.indice / tercoAtivo.partes.length) * 100)}%`,
                     }]} />
                   </View>
-                  <Text style={styles.contador}>{tercoAtivo.indice + 1} de {tercoAtivo.partes.length}</Text>
+                  <Text style={[styles.contador, { color: temaCores.corTextoSecundario }]}>{tercoAtivo.indice + 1} de {tercoAtivo.partes.length}</Text>
                 </View>
 
                 {/* Corpo com altura fixa — rola só aqui quando o texto é grande */}
                 <ScrollView style={styles.tercoCorpoFixo} contentContainerStyle={{ paddingBottom: 8 }}>
-                  <Text style={styles.tercoTitulo}>{tercoAtivo.partes[tercoAtivo.indice].titulo}</Text>
+                  <Text style={[styles.tercoTitulo, { color: temaCores.corTexto }]}>{tercoAtivo.partes[tercoAtivo.indice].titulo}</Text>
                   {!!tercoAtivo.partes[tercoAtivo.indice].subtitulo && (
-                    <Text style={styles.tercoSubtitulo}>{tercoAtivo.partes[tercoAtivo.indice].subtitulo}</Text>
+                    <Text style={[styles.tercoSubtitulo, { color: temaCores.corBotoes }]}>{tercoAtivo.partes[tercoAtivo.indice].subtitulo}</Text>
                   )}
                   {!!tercoAtivo.partes[tercoAtivo.indice].texto && (
-                    <TextoComParagrafos texto={tercoAtivo.partes[tercoAtivo.indice].texto} estilo={styles.tercoTexto} />
+                    <TextoComParagrafos texto={tercoAtivo.partes[tercoAtivo.indice].texto} estilo={[styles.tercoTexto, { color: temaCores.corTexto }]} />
                   )}
                 </ScrollView>
 
                 {/* Botões fixos embaixo, sempre no mesmo lugar */}
                 <View style={styles.tercoBotoes}>
                   <TouchableOpacity
-                    style={[styles.botaoSecundario, tercoAtivo.indice === 0 && styles.botaoDesabilitado]}
+                    style={[styles.botaoSecundario, { borderColor: temaCores.corDestaque }, tercoAtivo.indice === 0 && styles.botaoDesabilitado]}
                     disabled={tercoAtivo.indice === 0}
                     onPress={() => setTercoAtivo(t => ({ ...t, indice: t.indice - 1 }))}
                   >
-                    <Text style={styles.botaoSecundarioTexto}>← Anterior</Text>
+                    <Text style={[styles.botaoSecundarioTexto, { color: temaCores.corTexto }]}>← Anterior</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={styles.botaoPrimario}
+                    style={[styles.botaoPrimario, { backgroundColor: temaCores.corBotoes }]}
                     onPress={() => {
                       const ultimo = tercoAtivo.indice === tercoAtivo.partes.length - 1;
                       if (ultimo) setConcluido(true);
@@ -273,11 +282,11 @@ export default function OracoesScreen() {
             {tercoAtivo && concluido && (
               <View style={styles.tercoConclusaoLayout}>
                 <Text style={{ fontSize: 46, marginBottom: 10 }}>🌹</Text>
-                <Text style={styles.conclusaoTitulo}>Terço concluído!</Text>
+                <Text style={[styles.conclusaoTitulo, { color: temaCores.corTexto }]}>Terço concluído!</Text>
                 <ScrollView style={{ maxHeight: 160 }}>
-                  <Text style={styles.conclusaoTexto}>{tercoAtivo.terco.conclusao}</Text>
+                  <Text style={[styles.conclusaoTexto, { color: temaCores.corTextoSecundario }]}>{tercoAtivo.terco.conclusao}</Text>
                 </ScrollView>
-                <TouchableOpacity style={styles.botaoPrimario} onPress={() => setTercoAtivo(null)}>
+                <TouchableOpacity style={[styles.botaoPrimario, { backgroundColor: temaCores.corBotoes }]} onPress={() => setTercoAtivo(null)}>
                   <Text style={styles.botaoPrimarioTexto}>Fechar</Text>
                 </TouchableOpacity>
               </View>
@@ -298,8 +307,7 @@ const styles = StyleSheet.create({
   botaoVoltar: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
   cabecalhoTitulo: { color: '#fff', fontWeight: '700', fontSize: 17 },
   abas: { flexDirection: 'row', gap: 8, padding: 16, paddingBottom: 8 },
-  aba: { flex: 1, paddingVertical: 10, borderRadius: 999, backgroundColor: '#fff', alignItems: 'center', borderWidth: 1, borderColor: '#e3ddd2' },
-  abaAtiva: { backgroundColor: '#7A1F2B', borderColor: '#7A1F2B' },
+  aba: { flex: 1, paddingVertical: 10, borderRadius: 999, alignItems: 'center', borderWidth: 1, borderColor: '#e3ddd2' },
   abaTexto: { fontSize: 12, fontWeight: '700', color: '#6b6b6b' },
   abaTextoAtivo: { color: '#fff' },
   lista: { padding: 16, paddingTop: 8, gap: 10, paddingBottom: 32, width: '100%', maxWidth: 600, alignSelf: 'center' },
@@ -317,7 +325,6 @@ const styles = StyleSheet.create({
   carrosselDesc: { fontSize: 13, color: '#8a7d6f', textAlign: 'center' },
   pontos: { flexDirection: 'row', gap: 6, marginTop: 10 },
   ponto: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#e3ddd2' },
-  pontoAtivo: { backgroundColor: '#7A1F2B' },
   setaTerco: {
     width: 38, height: 38, borderRadius: 19, backgroundColor: '#fff',
     alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#e3ddd2',

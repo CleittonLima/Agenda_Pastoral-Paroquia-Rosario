@@ -1,7 +1,9 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ScrollView, View } from 'react-native';
+import { useApp } from '../context/AppContext';
 
 export default function FiltrosIgreja({ igrejas, filtroAtual, onFiltrar }) {
+  const { temaCores } = useApp();
   const opcoes = [{ id: 'todas', nome: 'Todas' }, ...igrejas];
   return (
     <View style={styles.wrapper}>
@@ -16,7 +18,10 @@ export default function FiltrosIgreja({ igrejas, filtroAtual, onFiltrar }) {
             <TouchableOpacity
               key={op.id}
               onPress={() => onFiltrar(op.id)}
-              style={[styles.chip, ativo && styles.chipAtivo]}
+              style={[
+                styles.chip,
+                ativo && { backgroundColor: temaCores.corBotoes, borderColor: temaCores.corBotoes },
+              ]}
               activeOpacity={0.7}
             >
               <Text style={[styles.texto, ativo && styles.textoAtivo]}>{op.nome}</Text>
@@ -48,7 +53,6 @@ const styles = StyleSheet.create({
     borderColor: '#e3ddd2',
     justifyContent: 'center',
   },
-  chipAtivo: { backgroundColor: '#7A1F2B', borderColor: '#7A1F2B' },
   texto: { fontSize: 13, fontWeight: '600', color: '#6b6b6b' },
   textoAtivo: { color: '#fff' },
 });

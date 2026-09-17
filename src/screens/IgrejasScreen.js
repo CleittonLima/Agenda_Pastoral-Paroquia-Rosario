@@ -16,7 +16,7 @@ function valorValido(v) {
 }
 
 export default function IgrejasScreen() {
-  const { dados, recarregar } = useApp();
+  const { dados, recarregar, temaCores } = useApp();
   const [igrejaSelecionada, setIgrejaSelecionada] = useState(null);
   const [redeSocialAberta, setRedeSocialAberta] = useState(false);
   const [atualizando, setAtualizando] = useState(false);
@@ -39,20 +39,20 @@ export default function IgrejasScreen() {
   ].filter(Boolean);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: temaCores.corBackground }]}>
       <CabecalhoApp titulo="Igrejas" />
-      <Text style={styles.tituloView}>Igrejas e Comunidades</Text>
-      <Text style={styles.subtitulo}>Toque em uma igreja para ver mais informações.</Text>
+      <Text style={[styles.tituloView, { color: temaCores.corTexto }]}>Igrejas e Comunidades</Text>
+      <Text style={[styles.subtitulo, { color: temaCores.corTextoSecundario }]}>Toque em uma igreja para ver mais informações.</Text>
 
       <FlatList
         data={dados.igrejas}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.lista}
-        refreshControl={<RefreshControl refreshing={atualizando} onRefresh={aoAtualizar} colors={['#7A1F2B']} />}
+        refreshControl={<RefreshControl refreshing={atualizando} onRefresh={aoAtualizar} colors={[temaCores.corBotoes]} />}
         ListEmptyComponent={<Text style={styles.vazio}>Nenhuma igreja cadastrada.</Text>}
         ListFooterComponent={
           <TouchableOpacity
-            style={[styles.card, { borderLeftColor: '#B98B2E' }]}
+            style={[styles.card, { backgroundColor: temaCores.corCard, borderLeftColor: '#B98B2E' }]}
             onPress={() => setRedeSocialAberta(true)}
             activeOpacity={0.85}
           >
@@ -66,14 +66,14 @@ export default function IgrejasScreen() {
               </View>
             )}
             <View style={styles.cardInfo}>
-              <Text style={styles.nome}>{config.redeSocialNome || 'Rede social oficial da paróquia'}</Text>
-              <Text style={styles.meta}>Toque para ver todas as formas de contato</Text>
+              <Text style={[styles.nome, { color: temaCores.corTexto }]}>{config.redeSocialNome || 'Rede social oficial da paróquia'}</Text>
+              <Text style={[styles.meta, { color: temaCores.corTextoSecundario }]}>Toque para ver todas as formas de contato</Text>
             </View>
           </TouchableOpacity>
         }
         renderItem={({ item }) => (
           <TouchableOpacity
-            style={[styles.card, { borderLeftColor: item.cor }]}
+            style={[styles.card, { backgroundColor: temaCores.corCard, borderLeftColor: item.cor }]}
             onPress={() => setIgrejaSelecionada(item)}
             activeOpacity={0.85}
           >
@@ -91,9 +91,9 @@ export default function IgrejasScreen() {
               )}
             </View>
             <View style={styles.cardInfo}>
-              <Text style={styles.nome}>{item.nome}</Text>
-              {!!item.endereco && <Text style={styles.meta}>📍 {item.endereco}</Text>}
-              {!!item.contato && <Text style={styles.meta}>📞 {item.contato}</Text>}
+              <Text style={[styles.nome, { color: temaCores.corTexto }]}>{item.nome}</Text>
+              {!!item.endereco && <Text style={[styles.meta, { color: temaCores.corTextoSecundario }]}>📍 {item.endereco}</Text>}
+              {!!item.contato && <Text style={[styles.meta, { color: temaCores.corTextoSecundario }]}>📞 {item.contato}</Text>}
             </View>
           </TouchableOpacity>
         )}
@@ -101,7 +101,7 @@ export default function IgrejasScreen() {
 
       <Modal visible={!!igrejaSelecionada} animationType="slide" transparent onRequestClose={() => setIgrejaSelecionada(null)}>
         <View style={styles.modalFundo}>
-          <View style={styles.modalCaixa}>
+          <View style={[styles.modalCaixa, { backgroundColor: temaCores.corCard }]}>
             <TouchableOpacity style={styles.modalFechar} onPress={() => setIgrejaSelecionada(null)}>
               <Text style={styles.modalFecharTexto}>✕</Text>
             </TouchableOpacity>
@@ -119,9 +119,9 @@ export default function IgrejasScreen() {
                   </View>
                 )}
                 <View style={[styles.modalFaixa, { backgroundColor: igrejaSelecionada.cor }]} />
-                <Text style={styles.modalNome}>{igrejaSelecionada.nome}</Text>
-                {!!igrejaSelecionada.endereco && <Text style={styles.modalMeta}>📍 {igrejaSelecionada.endereco}</Text>}
-                {!!igrejaSelecionada.contato && <Text style={styles.modalMeta}>📞 {igrejaSelecionada.contato}</Text>}
+                <Text style={[styles.modalNome, { color: temaCores.corTexto }]}>{igrejaSelecionada.nome}</Text>
+                {!!igrejaSelecionada.endereco && <Text style={[styles.modalMeta, { color: temaCores.corTextoSecundario }]}>📍 {igrejaSelecionada.endereco}</Text>}
+                {!!igrejaSelecionada.contato && <Text style={[styles.modalMeta, { color: temaCores.corTextoSecundario }]}>📞 {igrejaSelecionada.contato}</Text>}
 
                 <View style={{ gap: 10, marginTop: 16 }}>
                   {!!igrejaSelecionada.whatsapp && (
@@ -134,18 +134,18 @@ export default function IgrejasScreen() {
                   )}
                   {!!igrejaSelecionada.googleMaps && (
                     <TouchableOpacity
-                      style={styles.botaoSecundario}
+                      style={[styles.botaoSecundario, { borderColor: temaCores.corDestaque }]}
                       onPress={() => Linking.openURL(igrejaSelecionada.googleMaps)}
                     >
-                      <Text style={styles.botaoSecundarioTexto}>📍 Ver localização no Google Maps</Text>
+                      <Text style={[styles.botaoSecundarioTexto, { color: temaCores.corTexto }]}>📍 Ver localização no Google Maps</Text>
                     </TouchableOpacity>
                   )}
                   {!!igrejaSelecionada.instagram && (
                     <TouchableOpacity
-                      style={styles.botaoSecundario}
+                      style={[styles.botaoSecundario, { borderColor: temaCores.corDestaque }]}
                       onPress={() => Linking.openURL(igrejaSelecionada.instagram)}
                     >
-                      <Text style={styles.botaoSecundarioTexto}>📷 Instagram</Text>
+                      <Text style={[styles.botaoSecundarioTexto, { color: temaCores.corTexto }]}>📷 Instagram</Text>
                     </TouchableOpacity>
                   )}
                 </View>
@@ -157,7 +157,7 @@ export default function IgrejasScreen() {
 
       <Modal visible={redeSocialAberta} animationType="slide" transparent onRequestClose={() => setRedeSocialAberta(false)}>
         <View style={styles.modalFundo}>
-          <View style={styles.modalCaixa}>
+          <View style={[styles.modalCaixa, { backgroundColor: temaCores.corCard }]}>
             <TouchableOpacity style={styles.modalFechar} onPress={() => setRedeSocialAberta(false)}>
               <Text style={styles.modalFecharTexto}>✕</Text>
             </TouchableOpacity>
@@ -170,21 +170,21 @@ export default function IgrejasScreen() {
                 </View>
               )}
               <View style={[styles.modalFaixa, { backgroundColor: '#B98B2E' }]} />
-              <Text style={styles.modalNome}>{config.redeSocialNome || 'Rede social oficial da paróquia'}</Text>
+              <Text style={[styles.modalNome, { color: temaCores.corTexto }]}>{config.redeSocialNome || 'Rede social oficial da paróquia'}</Text>
               {botoesRedeSocial.length ? (
                 <View style={{ gap: 10, marginTop: 10 }}>
                   {botoesRedeSocial.map((b, i) => (
                     <TouchableOpacity
                       key={i}
-                      style={b.cor ? [styles.botao, { backgroundColor: b.cor }] : styles.botaoSecundario}
+                      style={b.cor ? [styles.botao, { backgroundColor: b.cor }] : [styles.botaoSecundario, { borderColor: temaCores.corDestaque }]}
                       onPress={() => Linking.openURL(b.url)}
                     >
-                      <Text style={b.cor ? styles.botaoTexto : styles.botaoSecundarioTexto}>{b.rotulo}</Text>
+                      <Text style={b.cor ? styles.botaoTexto : [styles.botaoSecundarioTexto, { color: temaCores.corTexto }]}>{b.rotulo}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
               ) : (
-                <Text style={styles.modalMeta}>Nenhum contato cadastrado ainda.</Text>
+                <Text style={[styles.modalMeta, { color: temaCores.corTextoSecundario }]}>Nenhum contato cadastrado ainda.</Text>
               )}
             </ScrollView>
           </View>

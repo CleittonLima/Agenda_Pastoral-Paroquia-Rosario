@@ -6,7 +6,7 @@ import CabecalhoApp from '../components/CabecalhoApp';
 import FiltrosIgreja from '../components/FiltrosIgreja';
 
 export default function HorariosScreen() {
-  const { dados, listarHorarios, nomeIgreja, corIgreja, recarregar } = useApp();
+  const { dados, listarHorarios, nomeIgreja, corIgreja, recarregar, temaCores } = useApp();
   const [filtro, setFiltro] = useState('todas');
   const [atualizando, setAtualizando] = useState(false);
 
@@ -19,26 +19,26 @@ export default function HorariosScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: temaCores.corBackground }]}>
       <CabecalhoApp titulo="Horários" />
-      <Text style={styles.tituloView}>Horários</Text>
+      <Text style={[styles.tituloView, { color: temaCores.corTexto }]}>Horários</Text>
       <FiltrosIgreja igrejas={dados.igrejas} filtroAtual={filtro} onFiltrar={setFiltro} />
       <FlatList
         data={itens}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.lista}
-        refreshControl={<RefreshControl refreshing={atualizando} onRefresh={aoAtualizar} colors={['#7A1F2B']} />}
+        refreshControl={<RefreshControl refreshing={atualizando} onRefresh={aoAtualizar} colors={[temaCores.corBotoes]} />}
         ListEmptyComponent={<Text style={styles.vazio}>Nenhum horário encontrado.</Text>}
         renderItem={({ item }) => (
-          <View style={[styles.card, { borderLeftColor: corIgreja(item.igrejaId) }]}>
+          <View style={[styles.card, { backgroundColor: temaCores.corCard, borderLeftColor: corIgreja(item.igrejaId) }]}>
             <Text style={styles.etiquetaIgreja}>{nomeIgreja(item.igrejaId)}</Text>
-            <Text style={styles.nome}>{item.nome}</Text>
-            <Text style={styles.meta}>{item.tipo}</Text>
-            <Text style={styles.metaData}>
+            <Text style={[styles.nome, { color: temaCores.corTexto }]}>{item.nome}</Text>
+            <Text style={[styles.meta, { color: temaCores.corTextoSecundario }]}>{item.tipo}</Text>
+            <Text style={[styles.metaData, { color: temaCores.corTexto }]}>
               {linhaDataCompleta(item.data, item.horario)}
               {item.recorrencia ? ` · ${item.recorrencia}` : ''}
             </Text>
-            {!!item.descricao && <Text style={styles.descricao}>{item.descricao}</Text>}
+            {!!item.descricao && <Text style={[styles.descricao, { color: temaCores.corTextoSecundario }]}>{item.descricao}</Text>}
           </View>
         )}
       />

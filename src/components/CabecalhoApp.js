@@ -7,11 +7,11 @@ import { obterAvatar } from '../data/avatares';
 
 export default function CabecalhoApp({ titulo }) {
   const navigation = useNavigation();
-  const { usuario } = useApp();
+  const { usuario, temaCores } = useApp();
   const avatar = usuario ? obterAvatar(usuario.avatar) : null;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: temaCores.corCabecalho }]}>
       <View style={styles.marca}>
         {avatar && <Image source={avatar.imagem} style={styles.avatar} />}
         <Text style={styles.saudacao} numberOfLines={1}>

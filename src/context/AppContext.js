@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { buscarTudo } from '../api/api';
 import {
@@ -6,6 +6,7 @@ import {
   proximaOcorrenciaDiaSemana,
   dataJaPassou,
 } from '../utils/datas';
+import { encontrarTema } from '../data/temas';
 
 // ============================================================
 // CHAVES DO ASYNCSTORAGE
@@ -168,6 +169,13 @@ export function AppProvider({ children }) {
   });
   const [temaVisual, setTemaVisual] = useState('cristo');
 
+  // Paleta de cores do tema atualmente ativo (já considerando claro/escuro) —
+  // é isso que as telas devem usar para se colorir de acordo com o tema.
+  const temaCores = useMemo(() => {
+    const tema = encontrarTema(temaVisual);
+    return preferencias.tema === 'escuro' ? tema.escuro : tema.claro;
+  }, [temaVisual, preferencias.tema]);
+
   // ---- Carregamento inicial ----
   useEffect(() => {
     carregarTudo();
@@ -323,7 +331,7 @@ export function AppProvider({ children }) {
     <AppContext.Provider value={{
       // Estado
       dados, carregando, comErro, semInternet,
-      usuario, preferencias, temaVisual,
+      usuario, preferencias, temaVisual, temaCores,
       // Ações
       recarregar: carregarTudo,
       salvarUsuario, salvarPreferencias, salvarTemaVisual, selecionarTemaVisual, limparDadosLocais,

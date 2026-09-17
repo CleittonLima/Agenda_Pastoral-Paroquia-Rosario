@@ -34,17 +34,16 @@ import AdminConfiguracoesScreen from './src/admin/AdminConfiguracoesScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
-const COR_PRIMARIA = '#7A1F2B';
 
 function TabNavigator() {
-  const { dados } = useApp();
+  const { dados, temaCores } = useApp();
   const totalAvisosUrgentes = dados.avisos.filter(a => a.prioridade !== 'Normal').length;
 
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: COR_PRIMARIA,
+        tabBarActiveTintColor: temaCores.corCabecalho,
         tabBarInactiveTintColor: '#999',
         tabBarStyle: {
           borderTopWidth: 0,
@@ -80,7 +79,7 @@ function TabNavigator() {
 }
 
 function AppRoot() {
-  const { carregando, usuario } = useApp();
+  const { carregando, usuario, temaCores } = useApp();
   const [primeiroAcesso, setPrimeiroAcesso] = useState(null);
 
   useEffect(() => {
@@ -91,32 +90,40 @@ function AppRoot() {
     verificar();
   }, []);
 
-  if (primeiroAcesso === null || carregando) return <LoadingScreen />;
+  let conteudo;
+  if (primeiroAcesso === null || carregando) {
+    conteudo = <LoadingScreen />;
+  } else if (primeiroAcesso || !usuario) {
+    conteudo = <BoasVindasScreen onConcluir={() => setPrimeiroAcesso(false)} />;
+  } else {
+    conteudo = (
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        {/* ---- App público (fiéis) ---- */}
+        <Stack.Screen name="Principal" component={TabNavigator} />
+        <Stack.Screen name="Oferta" component={OfertaScreen} />
+        <Stack.Screen name="Oracoes" component={OracoesScreen} />
+        <Stack.Screen name="Configuracoes" component={ConfiguracoesScreen} />
 
-  if (primeiroAcesso || !usuario) {
-    return <BoasVindasScreen onConcluir={() => setPrimeiroAcesso(false)} />;
+        {/* ---- Painel Administrativo (coordenador) ---- */}
+        <Stack.Screen name="AdminLogin" component={AdminLoginScreen} />
+        <Stack.Screen name="AdminMenu" component={AdminMenuScreen} />
+        <Stack.Screen name="AdminIgrejas" component={AdminIgrejasScreen} />
+        <Stack.Screen name="AdminHorarios" component={AdminHorariosScreen} />
+        <Stack.Screen name="AdminAvisos" component={AdminAvisosScreen} />
+        <Stack.Screen name="AdminEventos" component={AdminEventosScreen} />
+        <Stack.Screen name="AdminPix" component={AdminPixScreen} />
+        <Stack.Screen name="AdminGaleria" component={AdminGaleriaScreen} />
+        <Stack.Screen name="AdminRedesSociais" component={AdminRedesSociaisScreen} />
+        <Stack.Screen name="AdminConfiguracoes" component={AdminConfiguracoesScreen} />
+      </Stack.Navigator>
+    );
   }
 
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {/* ---- App público (fiéis) ---- */}
-      <Stack.Screen name="Principal" component={TabNavigator} />
-      <Stack.Screen name="Oferta" component={OfertaScreen} />
-      <Stack.Screen name="Oracoes" component={OracoesScreen} />
-      <Stack.Screen name="Configuracoes" component={ConfiguracoesScreen} />
-
-      {/* ---- Painel Administrativo (coordenador) ---- */}
-      <Stack.Screen name="AdminLogin" component={AdminLoginScreen} />
-      <Stack.Screen name="AdminMenu" component={AdminMenuScreen} />
-      <Stack.Screen name="AdminIgrejas" component={AdminIgrejasScreen} />
-      <Stack.Screen name="AdminHorarios" component={AdminHorariosScreen} />
-      <Stack.Screen name="AdminAvisos" component={AdminAvisosScreen} />
-      <Stack.Screen name="AdminEventos" component={AdminEventosScreen} />
-      <Stack.Screen name="AdminPix" component={AdminPixScreen} />
-      <Stack.Screen name="AdminGaleria" component={AdminGaleriaScreen} />
-      <Stack.Screen name="AdminRedesSociais" component={AdminRedesSociaisScreen} />
-      <Stack.Screen name="AdminConfiguracoes" component={AdminConfiguracoesScreen} />
-    </Stack.Navigator>
+    <>
+      <StatusBar style="light" backgroundColor={temaCores.corCabecalho} />
+      {conteudo}
+    </>
   );
 }
 
@@ -125,7 +132,6 @@ export default function App() {
     <AppProvider>
       <AdminProvider>
         <NavigationContainer>
-          <StatusBar style="light" backgroundColor={COR_PRIMARIA} />
           <AppRoot />
         </NavigationContainer>
       </AdminProvider>

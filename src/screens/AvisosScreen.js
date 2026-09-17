@@ -12,7 +12,7 @@ const CORES_PRIORIDADE = {
 };
 
 export default function AvisosScreen() {
-  const { dados, listarAvisos, nomeIgreja, corIgreja, recarregar } = useApp();
+  const { dados, listarAvisos, nomeIgreja, corIgreja, recarregar, temaCores } = useApp();
   const [filtro, setFiltro] = useState('todas');
   const [atualizando, setAtualizando] = useState(false);
 
@@ -25,27 +25,27 @@ export default function AvisosScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: temaCores.corBackground }]}>
       <CabecalhoApp titulo="Avisos" />
-      <Text style={styles.tituloView}>Avisos</Text>
+      <Text style={[styles.tituloView, { color: temaCores.corTexto }]}>Avisos</Text>
       <FiltrosIgreja igrejas={dados.igrejas} filtroAtual={filtro} onFiltrar={setFiltro} />
       <FlatList
         data={itens}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.lista}
-        refreshControl={<RefreshControl refreshing={atualizando} onRefresh={aoAtualizar} colors={['#7A1F2B']} />}
+        refreshControl={<RefreshControl refreshing={atualizando} onRefresh={aoAtualizar} colors={[temaCores.corBotoes]} />}
         ListEmptyComponent={<Text style={styles.vazio}>Nenhum aviso no momento.</Text>}
         renderItem={({ item }) => (
-          <View style={[styles.card, { borderLeftColor: corIgreja(item.igrejaId) }]}>
+          <View style={[styles.card, { backgroundColor: temaCores.corCard, borderLeftColor: corIgreja(item.igrejaId) }]}>
             <View style={styles.linhaTopo}>
               <Text style={styles.etiquetaIgreja}>{nomeIgreja(item.igrejaId)}</Text>
               <Text style={[styles.prioridade, { color: CORES_PRIORIDADE[item.prioridade] || '#8a7d6f' }]}>
                 {item.prioridade}
               </Text>
             </View>
-            <Text style={styles.titulo}>{item.titulo}</Text>
-            <Text style={styles.meta}>📅 {formatarDataBR(item.data)}</Text>
-            <Text style={styles.texto}>{item.texto}</Text>
+            <Text style={[styles.titulo, { color: temaCores.corTexto }]}>{item.titulo}</Text>
+            <Text style={[styles.meta, { color: temaCores.corTextoSecundario }]}>📅 {formatarDataBR(item.data)}</Text>
+            <Text style={[styles.texto, { color: temaCores.corTexto }]}>{item.texto}</Text>
           </View>
         )}
       />

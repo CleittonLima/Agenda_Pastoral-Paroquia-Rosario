@@ -7,7 +7,7 @@ import { useApp } from '../context/AppContext';
 
 export default function OfertaScreen() {
   const navigation = useNavigation();
-  const { dados } = useApp();
+  const { dados, temaCores } = useApp();
   const pix = dados.pix || {};
   const [copiado, setCopiado] = useState(false);
 
@@ -19,8 +19,8 @@ export default function OfertaScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.cabecalho}>
+    <View style={[styles.container, { backgroundColor: temaCores.corBackground }]}>
+      <View style={[styles.cabecalho, { backgroundColor: temaCores.corCabecalho }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.botaoVoltar} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
           <Ionicons name="arrow-back" size={22} color="#fff" />
         </TouchableOpacity>
@@ -29,11 +29,11 @@ export default function OfertaScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Text style={styles.subtexto}>
+        <Text style={[styles.subtexto, { color: temaCores.corTextoSecundario }]}>
           Sua contribuição ajuda a manter a vida e as obras da nossa comunidade.
         </Text>
 
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: temaCores.corCard }]}>
           {pix.qrcode ? (
             <Image source={{ uri: pix.qrcode }} style={styles.qrcode} resizeMode="contain" />
           ) : (
@@ -42,26 +42,26 @@ export default function OfertaScreen() {
             </View>
           )}
 
-          <Text style={styles.destinatario}>{pix.destinatario || 'Paróquia Nossa Senhora do Rosário'}</Text>
+          <Text style={[styles.destinatario, { color: temaCores.corTexto }]}>{pix.destinatario || 'Paróquia Nossa Senhora do Rosário'}</Text>
 
           <View style={styles.chaveContainer}>
-            <Text style={styles.chave} numberOfLines={1}>{pix.chave || 'Chave ainda não cadastrada'}</Text>
+            <Text style={[styles.chave, { color: temaCores.corTexto }]} numberOfLines={1}>{pix.chave || 'Chave ainda não cadastrada'}</Text>
             <TouchableOpacity
-              style={[styles.botaoCopiar, !pix.chave && styles.botaoDesabilitado]}
+              style={[styles.botaoCopiar, { backgroundColor: temaCores.corBotoes }, !pix.chave && styles.botaoDesabilitado]}
               onPress={copiarChave}
               disabled={!pix.chave}
             >
               <Text style={styles.botaoCopiarTexto}>{copiado ? 'Copiado! ✓' : 'Copiar chave PIX'}</Text>
             </TouchableOpacity>
           </View>
-          {!!pix.tipo && <Text style={styles.tipoChave}>Tipo de chave PIX: {pix.tipo}</Text>}
+          {!!pix.tipo && <Text style={[styles.tipoChave, { color: temaCores.corTextoSecundario }]}>Tipo de chave PIX: {pix.tipo}</Text>}
 
-          {!!pix.informacoes && <Text style={styles.descricao}>{pix.informacoes}</Text>}
-          {!!pix.tutorial && <Text style={styles.descricao}>{pix.tutorial}</Text>}
+          {!!pix.informacoes && <Text style={[styles.descricao, { color: temaCores.corTextoSecundario }]}>{pix.informacoes}</Text>}
+          {!!pix.tutorial && <Text style={[styles.descricao, { color: temaCores.corTextoSecundario }]}>{pix.tutorial}</Text>}
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.passosTitulo}>Como fazer sua oferta pelo PIX</Text>
+        <View style={[styles.card, { backgroundColor: temaCores.corCard }]}>
+          <Text style={[styles.passosTitulo, { color: temaCores.corTexto }]}>Como fazer sua oferta pelo PIX</Text>
           {[
             'Abra o aplicativo do seu banco;',
             'Escolha a opção PIX;',
@@ -70,8 +70,8 @@ export default function OfertaScreen() {
             'Informe o valor e confirme a transferência.',
           ].map((passo, i) => (
             <View key={i} style={styles.passoLinha}>
-              <Text style={styles.passoNumero}>{i + 1}</Text>
-              <Text style={styles.passoTexto}>{passo}</Text>
+              <Text style={[styles.passoNumero, { backgroundColor: temaCores.corBotoes }]}>{i + 1}</Text>
+              <Text style={[styles.passoTexto, { color: temaCores.corTexto }]}>{passo}</Text>
             </View>
           ))}
         </View>

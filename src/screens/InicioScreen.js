@@ -12,14 +12,15 @@ function ehTipoConfissao(tipo, nome) {
 }
 
 function CardResumo({ titulo, item, mensagemVazia, nomeIgreja }) {
+  const { temaCores } = useApp();
   return (
-    <View style={styles.card}>
-      <Text style={styles.cardEyebrow}>{titulo}</Text>
+    <View style={[styles.card, { backgroundColor: temaCores.corCard, borderLeftColor: temaCores.corDestaque }]}>
+      <Text style={[styles.cardEyebrow, { color: temaCores.corTextoSecundario }]}>{titulo}</Text>
       {item ? (
         <>
-          <Text style={styles.cardNome}>{item.nome}</Text>
-          <Text style={styles.cardLinha}>{linhaDataCompleta(item.data, item.horario)}</Text>
-          <Text style={styles.cardLinha2}>
+          <Text style={[styles.cardNome, { color: temaCores.corTexto }]}>{item.nome}</Text>
+          <Text style={[styles.cardLinha, { color: temaCores.corTexto }]}>{linhaDataCompleta(item.data, item.horario)}</Text>
+          <Text style={[styles.cardLinha2, { color: temaCores.corTextoSecundario }]}>
             {nomeIgreja(item.igrejaId)}{item.local ? ' · ' + item.local : ''}
           </Text>
         </>
@@ -32,7 +33,7 @@ function CardResumo({ titulo, item, mensagemVazia, nomeIgreja }) {
 
 export default function InicioScreen() {
   const navigation = useNavigation();
-  const { dados, listarHorarios, listarEventos, nomeIgreja, semInternet } = useApp();
+  const { dados, listarHorarios, listarEventos, nomeIgreja, semInternet, temaCores } = useApp();
 
   const horarios = listarHorarios();
   const proximasCelebracoes = horarios.filter(h => !ehTipoConfissao(h.tipo, h.nome));
@@ -54,7 +55,7 @@ export default function InicioScreen() {
   ];
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: temaCores.corBackground }]}>
       <CabecalhoApp />
       <ScrollView contentContainerStyle={styles.scroll}>
         {semInternet && (
@@ -72,11 +73,11 @@ export default function InicioScreen() {
               <Text style={{ fontSize: 40 }}>✝️</Text>
             </View>
           )}
-          <Text style={styles.nomeParoquia}>{nomeParoquia}</Text>
+          <Text style={[styles.nomeParoquia, { color: temaCores.corTexto }]}>{nomeParoquia}</Text>
         </View>
 
-        <Text style={styles.tituloView}>Início</Text>
-        <Text style={styles.dataAtual}>{hoje}</Text>
+        <Text style={[styles.tituloView, { color: temaCores.corTexto }]}>Início</Text>
+        <Text style={[styles.dataAtual, { color: temaCores.corTextoSecundario }]}>{hoje}</Text>
 
         <CardResumo
           titulo="Próxima celebração"
@@ -113,9 +114,14 @@ export default function InicioScreen() {
 
         <View style={styles.atalhosGrid}>
           {atalhos.map(at => (
-            <TouchableOpacity key={at.rotulo} style={styles.atalho} onPress={at.onPress} activeOpacity={0.75}>
+            <TouchableOpacity
+              key={at.rotulo}
+              style={[styles.atalho, { backgroundColor: temaCores.corCard }]}
+              onPress={at.onPress}
+              activeOpacity={0.75}
+            >
               <Text style={styles.atalhoIcone}>{at.icone}</Text>
-              <Text style={styles.atalhoTexto}>{at.rotulo}</Text>
+              <Text style={[styles.atalhoTexto, { color: temaCores.corTexto }]}>{at.rotulo}</Text>
             </TouchableOpacity>
           ))}
         </View>
