@@ -166,7 +166,7 @@ export function AppProvider({ children }) {
     daltonismo: 'nenhum',
     reduzirAnimacoes: false,
   });
-  const [temaVisual, setTemaVisual] = useState('padrao');
+  const [temaVisual, setTemaVisual] = useState('cristo');
 
   // ---- Carregamento inicial ----
   useEffect(() => {
@@ -298,11 +298,25 @@ export function AppProvider({ children }) {
     await AsyncStorage.setItem(CHAVES.temaVisual, tema);
   }
 
+  // Toca no tema: se já é o tema ativo, alterna entre claro/escuro;
+  // se é outro tema, seleciona ele (sempre começando no modo claro)
+  async function selecionarTemaVisual(temaId) {
+    if (temaVisual === temaId) {
+      const novoModo = preferencias.tema === 'escuro' ? 'claro' : 'escuro';
+      await salvarPreferencias({ ...preferencias, tema: novoModo });
+    } else {
+      await salvarTemaVisual(temaId);
+      if (preferencias.tema !== 'claro') {
+        await salvarPreferencias({ ...preferencias, tema: 'claro' });
+      }
+    }
+  }
+
   async function limparDadosLocais() {
     await AsyncStorage.multiRemove([CHAVES.usuario, CHAVES.preferencias, CHAVES.temaVisual]);
     setUsuario(null);
     setPreferencias({ tema: 'claro', altoContraste: false, daltonismo: 'nenhum', reduzirAnimacoes: false });
-    setTemaVisual('padrao');
+    setTemaVisual('cristo');
   }
 
   return (
@@ -312,7 +326,7 @@ export function AppProvider({ children }) {
       usuario, preferencias, temaVisual,
       // Ações
       recarregar: carregarTudo,
-      salvarUsuario, salvarPreferencias, salvarTemaVisual, limparDadosLocais,
+      salvarUsuario, salvarPreferencias, salvarTemaVisual, selecionarTemaVisual, limparDadosLocais,
       // Helpers
       listarHorarios, listarAvisos, listarEventos,
       obterIgreja, nomeIgreja, corIgreja, valorValido,

@@ -7,13 +7,26 @@ import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../context/AppContext';
 import { AVATARES } from '../data/avatares';
+import { CATEGORIAS_TEMAS, encontrarTema, temasDaCategoria } from '../data/temas';
 
 export default function ConfiguracoesScreen() {
   const navigation = useNavigation();
   const {
     usuario, salvarUsuario, preferencias, salvarPreferencias,
-    limparDadosLocais, dados,
+    temaVisual, selecionarTemaVisual, limparDadosLocais, dados,
   } = useApp();
+
+  const modoEscuroAtivo = preferencias.tema === 'escuro';
+  const temaSelecionado = encontrarTema(temaVisual);
+  const coresTemaAtivo = modoEscuroAtivo ? temaSelecionado.escuro : temaSelecionado.claro;
+
+  // Acordeão das categorias de tema — a categoria do tema atualmente
+  // selecionado começa aberta; as demais começam fechadas.
+  const [categoriaTemaAberta, setCategoriaTemaAberta] = useState(temaSelecionado.categoria);
+
+  function alternarCategoriaTema(categoria) {
+    setCategoriaTemaAberta(prev => (prev === categoria ? null : categoria));
+  }
 
   const [nomeCompleto, setNomeCompleto] = useState(usuario?.nomeCompleto || '');
   const [apelido, setApelido] = useState(usuario?.apelido || '');
@@ -84,6 +97,77 @@ export default function ConfiguracoesScreen() {
               </TouchableOpacity>
             ))}
           </ScrollView>
+        </View>
+
+        {/* ---- TEMA VISUAL ---- */}
+        <View style={styles.grupo}>
+          <Text style={styles.grupoTitulo}>Tema visual</Text>
+          <Text style={styles.subtexto}>
+            Toque em um tema para selecioná-lo. Toque de novo no mesmo tema para
+            alternar entre o modo claro e o modo escuro dele.
+          </Text>
+
+          {CATEGORIAS_TEMAS.map(categoria => {
+            const temas = temasDaCategoria(categoria.id);
+            const aberta = !categoria.colapsavel || categoriaTemaAberta === categoria.id;
+            return (
+              <View key={categoria.id} style={styles.temaCategoria}>
+                <TouchableOpacity
+                  style={styles.temaCategoriaCabecalho}
+                  activeOpacity={categoria.colapsavel ? 0.6 : 1}
+                  onPress={() => categoria.colapsavel && alternarCategoriaTema(categoria.id)}
+                >
+                  <Text style={styles.temaCategoriaTitulo}>
+                    {categoria.icone} {categoria.nome}
+                  </Text>
+                  {categoria.colapsavel && (
+                    <Ionicons name={aberta ? 'chevron-up' : 'chevron-down'} size={16} color="#8a7d6f" />
+                  )}
+                </TouchableOpacity>
+
+                {aberta && (
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 8 }}>
+                    {temas.map(tema => {
+                      const selecionado = temaVisual === tema.id;
+                      const escuroDesteTema = selecionado && modoEscuroAtivo;
+                      const cores = escuroDesteTema ? tema.escuro : tema.claro;
+                      return (
+                        <TouchableOpacity
+                          key={tema.id}
+                          style={styles.temaItem}
+                          onPress={() => selecionarTemaVisual(tema.id)}
+                        >
+                          <View
+                            style={[
+                              styles.temaSwatch,
+                              {
+                                backgroundColor: cores.corCabecalho,
+                                borderColor: selecionado ? cores.corDestaque : 'transparent',
+                              },
+                            ]}
+                          >
+                            {selecionado && <Ionicons name="checkmark" size={18} color="#fff" />}
+                          </View>
+                          <Text style={styles.temaNome} numberOfLines={2}>{tema.nome}</Text>
+                          {selecionado && (
+                            <Text style={[styles.temaModo, { color: cores.corCabecalho }]}>
+                              {escuroDesteTema ? 'ESCURO' : 'CLARO'}
+                            </Text>
+                          )}
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </ScrollView>
+                )}
+              </View>
+            );
+          })}
+
+          {!!temaSelecionado?.frase && (
+            <View style={[styles.fraseBox, { borderLeftColor: coresTemaAtivo.corDestaque }]}>
+              <Text style={styles.fraseTexto}>“{temaSelecionado.frase}”</Text>
+            </View>
+          )}
         </View>
 
         {/* ---- ACESSIBILIDADE ---- */}
@@ -159,6 +243,23 @@ const styles = StyleSheet.create({
   avatarBtn: { width: 58, height: 58, borderRadius: 29, marginRight: 10, borderWidth: 2, borderColor: 'transparent' },
   avatarBtnAtivo: { borderColor: '#7A1F2B' },
   avatarImg: { width: '100%', height: '100%', borderRadius: 29 },
+  temaCategoria: { marginTop: 14 },
+  temaCategoriaCabecalho: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+  },
+  temaCategoriaTitulo: { fontSize: 13, fontWeight: '700', color: '#5a5048' },
+  temaItem: { width: 76, alignItems: 'center', marginRight: 12 },
+  temaSwatch: {
+    width: 48, height: 48, borderRadius: 24, borderWidth: 2,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  temaNome: { fontSize: 11, color: '#5a5048', textAlign: 'center', marginTop: 6, lineHeight: 14 },
+  temaModo: { fontSize: 10, fontWeight: '700', marginTop: 2, letterSpacing: 0.5 },
+  fraseBox: {
+    marginTop: 16, padding: 14, borderRadius: 12, backgroundColor: '#FAF7F2',
+    borderLeftWidth: 3,
+  },
+  fraseTexto: { fontSize: 13, fontStyle: 'italic', color: '#2b2320', lineHeight: 19 },
   linhaSwitch: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   rotuloSwitch: { fontSize: 14, color: '#2b2320', fontWeight: '600' },
   botaoPerigo: {
