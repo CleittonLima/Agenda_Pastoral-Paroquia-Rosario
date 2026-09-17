@@ -1,3 +1,6 @@
+import * as FileSystem from 'expo-file-system';
+import { Platform } from 'react-native';
+
 // ============================================================
 // COLE AQUI A URL DO SEU APPS SCRIPT (a mesma do site)
 // ============================================================
@@ -71,4 +74,40 @@ export async function salvarPix(senha, item) {
 // Configurações gerais
 export async function salvarConfiguracoes(senha, item) {
   return chamarApi('adminSalvarConfiguracoes', { senha, item });
+}
+
+// ============================================================
+// UPLOAD DE IMAGEM
+// Recebe o "uri" local de uma imagem (escolhida via expo-image-picker),
+// converte para Base64 e manda para o Code.gs, que salva no Google
+// Drive e devolve a URL pronta para usar.
+//
+// IMPORTANTE: no celular (Android/iOS), o "uri" é um caminho de arquivo
+// de verdade, e o expo-file-system consegue ler direto. Já no modo Web
+// (navegador), o "uri" vem como "blob:..." — o expo-file-system NÃO
+// consegue ler isso, então usamos fetch + FileReader nesse caso.
+// ============================================================
+export async function enviarImagem(senha, uriLocal, nomeArquivo, tipoMime) {
+  let base64;
+
+  if (Platform.OS === 'web') {
+    const blob = await (await fetch(uriLocal)).blob();
+    base64 = await new Promise((resolver, rejeitar) => {
+      const leitor = new FileReader();
+      leitor.onloadend = () => resolver(leitor.result.split(',').pop());
+      leitor.onerror = rejeitar;
+      leitor.readAsDataURL(blob);
+    });
+  } else {
+    base64 = await FileSystem.readAsStringAsync(uriLocal, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+  }
+
+  return chamarApi('adminUploadImagem', {
+    senha,
+    base64: `data:${tipoMime || 'image/jpeg'};base64,${base64}`,
+    nomeArquivo: nomeArquivo || `imagem-${Date.now()}.jpg`,
+    tipoMime: tipoMime || 'image/jpeg',
+  });
 }

@@ -133,6 +133,8 @@ function mapearConfiguracoes(linha) {
     site: linha.Site || '',
     drive: linha.Drive || '',
     endereco: linha.Endereco || '',
+    redeSocialNome: linha.RedeSocialNome || '',
+    redeSocialImagem: linha.RedeSocialImagem || '',
   };
 }
 
