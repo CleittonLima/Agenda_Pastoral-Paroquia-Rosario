@@ -13,12 +13,11 @@ export default function ConfiguracoesScreen() {
   const navigation = useNavigation();
   const {
     usuario, salvarUsuario, preferencias, salvarPreferencias,
-    temaVisual, selecionarTemaVisual, limparDadosLocais, dados,
+    temaVisual, selecionarTemaVisual, limparDadosLocais, dados, temaCores,
   } = useApp();
 
   const modoEscuroAtivo = preferencias.tema === 'escuro';
   const temaSelecionado = encontrarTema(temaVisual);
-  const coresTemaAtivo = modoEscuroAtivo ? temaSelecionado.escuro : temaSelecionado.claro;
 
   // Acordeão das categorias de tema — a categoria do tema atualmente
   // selecionado começa aberta; as demais começam fechadas.
@@ -60,8 +59,8 @@ export default function ConfiguracoesScreen() {
   const config = dados.config || {};
 
   return (
-    <View style={styles.container}>
-      <View style={styles.cabecalho}>
+    <View style={[styles.container, { backgroundColor: temaCores.corBackground }]}>
+      <View style={[styles.cabecalho, { backgroundColor: temaCores.corCabecalho }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.botaoVoltar} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
           <Ionicons name="arrow-back" size={22} color="#fff" />
         </TouchableOpacity>
@@ -71,27 +70,27 @@ export default function ConfiguracoesScreen() {
 
       <ScrollView contentContainerStyle={styles.scroll}>
         {/* ---- PERFIL ---- */}
-        <View style={styles.grupo}>
-          <Text style={styles.grupoTitulo}>Seu perfil</Text>
-          <Text style={styles.rotulo}>Nome completo</Text>
-          <TextInput style={styles.input} value={nomeCompleto} onChangeText={setNomeCompleto} autoCapitalize="words" />
-          <Text style={styles.rotulo}>Nome de preferência</Text>
-          <TextInput style={styles.input} value={apelido} onChangeText={setApelido} autoCapitalize="words" />
-          <TouchableOpacity style={styles.botaoPrimario} onPress={salvarPerfil}>
+        <View style={[styles.grupo, { backgroundColor: temaCores.corCard }]}>
+          <Text style={[styles.grupoTitulo, { color: temaCores.corTexto }]}>Seu perfil</Text>
+          <Text style={[styles.rotulo, { color: temaCores.corTextoSecundario }]}>Nome completo</Text>
+          <TextInput style={[styles.input, { color: temaCores.corTexto }]} value={nomeCompleto} onChangeText={setNomeCompleto} autoCapitalize="words" />
+          <Text style={[styles.rotulo, { color: temaCores.corTextoSecundario }]}>Nome de preferência</Text>
+          <TextInput style={[styles.input, { color: temaCores.corTexto }]} value={apelido} onChangeText={setApelido} autoCapitalize="words" />
+          <TouchableOpacity style={[styles.botaoPrimario, { backgroundColor: temaCores.corBotoes }]} onPress={salvarPerfil}>
             <Text style={styles.botaoPrimarioTexto}>Salvar perfil</Text>
           </TouchableOpacity>
         </View>
 
         {/* ---- AVATAR ---- */}
-        <View style={styles.grupo}>
-          <Text style={styles.grupoTitulo}>Seu avatar</Text>
-          <Text style={styles.subtexto}>Toque em uma imagem para trocar seu avatar — a troca é salva na hora.</Text>
+        <View style={[styles.grupo, { backgroundColor: temaCores.corCard }]}>
+          <Text style={[styles.grupoTitulo, { color: temaCores.corTexto }]}>Seu avatar</Text>
+          <Text style={[styles.subtexto, { color: temaCores.corTextoSecundario }]}>Toque em uma imagem para trocar seu avatar — a troca é salva na hora.</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 8 }}>
             {AVATARES.map(av => (
               <TouchableOpacity
                 key={av.id}
                 onPress={() => escolherAvatar(av.id)}
-                style={[styles.avatarBtn, avatarSelecionado === av.id && styles.avatarBtnAtivo]}
+                style={[styles.avatarBtn, avatarSelecionado === av.id && { borderColor: temaCores.corBotoes }]}
               >
                 <Image source={av.imagem} style={styles.avatarImg} />
               </TouchableOpacity>
@@ -100,9 +99,9 @@ export default function ConfiguracoesScreen() {
         </View>
 
         {/* ---- TEMA VISUAL ---- */}
-        <View style={styles.grupo}>
-          <Text style={styles.grupoTitulo}>Tema visual</Text>
-          <Text style={styles.subtexto}>
+        <View style={[styles.grupo, { backgroundColor: temaCores.corCard }]}>
+          <Text style={[styles.grupoTitulo, { color: temaCores.corTexto }]}>Tema visual</Text>
+          <Text style={[styles.subtexto, { color: temaCores.corTextoSecundario }]}>
             Toque em um tema para selecioná-lo. Toque de novo no mesmo tema para
             alternar entre o modo claro e o modo escuro dele.
           </Text>
@@ -113,80 +112,93 @@ export default function ConfiguracoesScreen() {
             return (
               <View key={categoria.id} style={styles.temaCategoria}>
                 <TouchableOpacity
-                  style={styles.temaCategoriaCabecalho}
+                  style={[styles.temaCategoriaCabecalho, { backgroundColor: temaCores.corFundoSuave }]}
                   activeOpacity={categoria.colapsavel ? 0.6 : 1}
                   onPress={() => categoria.colapsavel && alternarCategoriaTema(categoria.id)}
                 >
-                  <Text style={styles.temaCategoriaTitulo}>
-                    {categoria.icone} {categoria.nome}
+                  <Text style={[styles.temaCategoriaTitulo, { color: temaCores.corTexto }]}>
+                    {categoria.icone}  {categoria.nome}
                   </Text>
                   {categoria.colapsavel && (
-                    <Ionicons name={aberta ? 'chevron-up' : 'chevron-down'} size={16} color="#8a7d6f" />
+                    <Ionicons name={aberta ? 'chevron-up' : 'chevron-down'} size={18} color={temaCores.corTextoSecundario} />
                   )}
                 </TouchableOpacity>
 
                 {aberta && (
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 8 }}>
+                  <View style={styles.temaGrade}>
                     {temas.map(tema => {
                       const selecionado = temaVisual === tema.id;
                       const escuroDesteTema = selecionado && modoEscuroAtivo;
                       const cores = escuroDesteTema ? tema.escuro : tema.claro;
+                      const paletaBase = tema.claro;
                       return (
                         <TouchableOpacity
                           key={tema.id}
-                          style={styles.temaItem}
+                          style={[
+                            styles.temaCard,
+                            {
+                              backgroundColor: temaCores.corCard,
+                              borderColor: selecionado ? cores.corDestaque : '#e3ddd2',
+                              borderWidth: selecionado ? 2 : 1,
+                            },
+                          ]}
                           onPress={() => selecionarTemaVisual(tema.id)}
+                          activeOpacity={0.85}
                         >
-                          <View
-                            style={[
-                              styles.temaSwatch,
-                              {
-                                backgroundColor: cores.corCabecalho,
-                                borderColor: selecionado ? cores.corDestaque : 'transparent',
-                              },
-                            ]}
-                          >
-                            {selecionado && <Ionicons name="checkmark" size={18} color="#fff" />}
-                          </View>
-                          <Text style={styles.temaNome} numberOfLines={2}>{tema.nome}</Text>
-                          {selecionado && (
-                            <Text style={[styles.temaModo, { color: cores.corCabecalho }]}>
-                              {escuroDesteTema ? 'ESCURO' : 'CLARO'}
-                            </Text>
+                          <Text style={[styles.temaCardNome, { color: temaCores.corTexto }]} numberOfLines={2}>
+                            {tema.icone ? `${tema.icone} ` : ''}{tema.nome}
+                          </Text>
+
+                          {selecionado ? (
+                            <>
+                              {!!tema.frase && (
+                                <Text style={[styles.temaCardFrase, { color: temaCores.corTextoSecundario }]}>
+                                  “{tema.frase}”
+                                </Text>
+                              )}
+                              <View style={styles.temaCardStatusLinha}>
+                                <Ionicons name="checkmark-circle" size={14} color="#2E7D46" />
+                                <Text style={styles.temaCardStatusTexto}>Tema ativo</Text>
+                              </View>
+                              <Text style={[styles.temaCardModo, { color: cores.corCabecalho }]}>
+                                {escuroDesteTema ? '🌙 ESCURO' : '☀️ CLARO'}
+                              </Text>
+                            </>
+                          ) : (
+                            <View style={styles.temaCardPaleta}>
+                              <View style={[styles.temaCardBarra, styles.temaCardBarraGrossa, { backgroundColor: paletaBase.corCabecalho }]} />
+                              <View style={[styles.temaCardBarra, { backgroundColor: paletaBase.corFundoSuave }]} />
+                              <View style={[styles.temaCardBarra, { backgroundColor: paletaBase.corBackground }]} />
+                              <View style={[styles.temaCardBarra, styles.temaCardBarraGrossa, { backgroundColor: paletaBase.corBotoesHover }]} />
+                            </View>
                           )}
                         </TouchableOpacity>
                       );
                     })}
-                  </ScrollView>
+                  </View>
                 )}
               </View>
             );
           })}
-
-          {!!temaSelecionado?.frase && (
-            <View style={[styles.fraseBox, { borderLeftColor: coresTemaAtivo.corDestaque }]}>
-              <Text style={styles.fraseTexto}>“{temaSelecionado.frase}”</Text>
-            </View>
-          )}
         </View>
 
         {/* ---- ACESSIBILIDADE ---- */}
-        <View style={styles.grupo}>
-          <Text style={styles.grupoTitulo}>Acessibilidade</Text>
+        <View style={[styles.grupo, { backgroundColor: temaCores.corCard }]}>
+          <Text style={[styles.grupoTitulo, { color: temaCores.corTexto }]}>Acessibilidade</Text>
           <View style={styles.linhaSwitch}>
-            <Text style={styles.rotuloSwitch}>Reduzir animações</Text>
+            <Text style={[styles.rotuloSwitch, { color: temaCores.corTexto }]}>Reduzir animações</Text>
             <Switch
               value={preferencias.reduzirAnimacoes}
               onValueChange={alternarReduzirAnimacoes}
-              trackColor={{ true: '#7A1F2B' }}
+              trackColor={{ true: temaCores.corBotoes }}
             />
           </View>
         </View>
 
         {/* ---- DADOS LOCAIS ---- */}
-        <View style={styles.grupo}>
-          <Text style={styles.grupoTitulo}>Dados salvos neste dispositivo</Text>
-          <Text style={styles.subtexto}>
+        <View style={[styles.grupo, { backgroundColor: temaCores.corCard }]}>
+          <Text style={[styles.grupoTitulo, { color: temaCores.corTexto }]}>Dados salvos neste dispositivo</Text>
+          <Text style={[styles.subtexto, { color: temaCores.corTextoSecundario }]}>
             Este app guarda neste aparelho apenas o seu nome, avatar e preferências. Horários, avisos e
             eventos vêm sempre da planilha da paróquia.
           </Text>
@@ -195,23 +207,23 @@ export default function ConfiguracoesScreen() {
           </TouchableOpacity>
         </View>
 
-<TouchableOpacity
-  style={{ alignItems: 'center', paddingVertical: 16, marginTop: 10 }}
-  onPress={() => navigation.navigate('AdminLogin')}
->
-  <Text style={{ color: '#8a7d6f', fontSize: 13, fontWeight: '600' }}>
-    Acesso do Coordenador
-  </Text>
-</TouchableOpacity>
+        <TouchableOpacity
+          style={{ alignItems: 'center', paddingVertical: 16, marginTop: 10 }}
+          onPress={() => navigation.navigate('AdminLogin')}
+        >
+          <Text style={{ color: temaCores.corTextoSecundario, fontSize: 13, fontWeight: '600' }}>
+            Acesso do Coordenador
+          </Text>
+        </TouchableOpacity>
 
         {/* ---- SOBRE ---- */}
-        <View style={[styles.grupo, { alignItems: 'center' }]}>
-          <Text style={styles.grupoTitulo}>Sobre</Text>
-          <Text style={styles.sobreTexto}>{config.nomeParoquia || 'Paróquia Nossa Senhora do Rosário'}</Text>
-          {!!config.endereco && <Text style={styles.sobreMeta}>{config.endereco}</Text>}
-          {!!config.telefone && <Text style={styles.sobreMeta}>{config.telefone}</Text>}
-          {!!config.email && <Text style={styles.sobreMeta}>{config.email}</Text>}
-          <Text style={styles.sobreVersao}>Versão 1.0.0 (React Native)</Text>
+        <View style={[styles.grupo, { backgroundColor: temaCores.corCard, alignItems: 'center' }]}>
+          <Text style={[styles.grupoTitulo, { color: temaCores.corTexto }]}>Sobre</Text>
+          <Text style={[styles.sobreTexto, { color: temaCores.corTexto }]}>{config.nomeParoquia || 'Paróquia Nossa Senhora do Rosário'}</Text>
+          {!!config.endereco && <Text style={[styles.sobreMeta, { color: temaCores.corTextoSecundario }]}>{config.endereco}</Text>}
+          {!!config.telefone && <Text style={[styles.sobreMeta, { color: temaCores.corTextoSecundario }]}>{config.telefone}</Text>}
+          {!!config.email && <Text style={[styles.sobreMeta, { color: temaCores.corTextoSecundario }]}>{config.email}</Text>}
+          <Text style={[styles.sobreVersao, { color: temaCores.corTextoSecundario }]}>Versão 1.0.0 (React Native)</Text>
         </View>
       </ScrollView>
     </View>
@@ -241,25 +253,23 @@ const styles = StyleSheet.create({
   botaoPrimario: { backgroundColor: '#7A1F2B', borderRadius: 10, padding: 13, alignItems: 'center', marginTop: 14 },
   botaoPrimarioTexto: { color: '#fff', fontWeight: '700', fontSize: 14 },
   avatarBtn: { width: 58, height: 58, borderRadius: 29, marginRight: 10, borderWidth: 2, borderColor: 'transparent' },
-  avatarBtnAtivo: { borderColor: '#7A1F2B' },
   avatarImg: { width: '100%', height: '100%', borderRadius: 29 },
   temaCategoria: { marginTop: 14 },
   temaCategoriaCabecalho: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12, marginBottom: 10,
   },
-  temaCategoriaTitulo: { fontSize: 13, fontWeight: '700', color: '#5a5048' },
-  temaItem: { width: 76, alignItems: 'center', marginRight: 12 },
-  temaSwatch: {
-    width: 48, height: 48, borderRadius: 24, borderWidth: 2,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  temaNome: { fontSize: 11, color: '#5a5048', textAlign: 'center', marginTop: 6, lineHeight: 14 },
-  temaModo: { fontSize: 10, fontWeight: '700', marginTop: 2, letterSpacing: 0.5 },
-  fraseBox: {
-    marginTop: 16, padding: 14, borderRadius: 12, backgroundColor: '#FAF7F2',
-    borderLeftWidth: 3,
-  },
-  fraseTexto: { fontSize: 13, fontStyle: 'italic', color: '#2b2320', lineHeight: 19 },
+  temaCategoriaTitulo: { fontSize: 14, fontWeight: '700' },
+  temaGrade: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  temaCard: { width: '47%', borderRadius: 14, padding: 12, minHeight: 92 },
+  temaCardNome: { fontSize: 13, fontWeight: '700', marginBottom: 8, lineHeight: 17 },
+  temaCardFrase: { fontSize: 11, fontStyle: 'italic', lineHeight: 15, marginBottom: 8 },
+  temaCardStatusLinha: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 4 },
+  temaCardStatusTexto: { fontSize: 11, fontWeight: '700', color: '#2E7D46' },
+  temaCardModo: { fontSize: 10, fontWeight: '700', letterSpacing: 0.5 },
+  temaCardPaleta: { gap: 4, marginTop: 4 },
+  temaCardBarra: { height: 5, borderRadius: 3, width: '100%' },
+  temaCardBarraGrossa: { height: 7 },
   linhaSwitch: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   rotuloSwitch: { fontSize: 14, color: '#2b2320', fontWeight: '600' },
   botaoPerigo: {
