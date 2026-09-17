@@ -97,51 +97,58 @@ export const ORACOES = [
 // ============================================================
 export const MISTERIOS = {
   gozosos: {
-    nome: 'Mistérios Gozosos',
-    icone: '🌸',
-    dias: ['Segunda-feira', 'Sábado'],
+    nome: "Mistérios Gozosos",
+    icone: "🌸",
+    dias: ["Segunda-feira", "Sábado"],
     lista: [
-      { nome: 'A Anunciação do Arcanjo Gabriel a Maria', reflexao: '' },
-      { nome: 'A Visitação de Maria a Isabel', reflexao: '' },
-      { nome: 'O Nascimento de Jesus em Belém', reflexao: '' },
-      { nome: 'A Apresentação de Jesus no Templo', reflexao: '' },
-      { nome: 'O Encontro de Jesus no Templo aos doze anos', reflexao: '' },
-    ],
+      
+      { nome: "A Anunciação do Anjo a Maria", reflexao: "Contemplamos o momento em que o Anjo Gabriel anuncia a Maria que ela será a Mãe do Salvador. Com seu “sim” humilde e confiante, Maria acolhe a vontade de Deus." },
+      { nome: "A Visitação de Maria a Isabel", reflexao: "Contemplamos Maria visitando sua prima Isabel e levando consigo a presença de Jesus. Cheia de alegria, Maria proclama as maravilhas que Deus realizou." },
+      { nome: "O Nascimento de Jesus", reflexao: "Contemplamos o nascimento de Jesus em Belém, na humildade de uma manjedoura. O Filho de Deus vem ao mundo para trazer-nos a salvação." },
+      { nome: "A Apresentação de Jesus no Templo", reflexao: "Contemplamos Maria e José apresentando Jesus no Templo e oferecendo-O ao Senhor. Simeão reconhece naquele Menino a salvação prometida." },
+      { nome: "A Perda e o Encontro de Jesus mo Templo", reflexao: "Contemplamos Maria e José encontrando Jesus no Templo, depois de procurá-Lo com angústia. Jesus estava na casa de Seu Pai, cumprindo Sua missão." }
+    
+    ]
   },
   dolorosos: {
-    nome: 'Mistérios Dolorosos',
-    icone: '✝️',
-    dias: ['Terça-feira', 'Sexta-feira'],
+    nome: "Mistérios Dolorosos",
+    icone: "✝️",
+    dias: ["Terça-feira", "Sexta-feira"],
     lista: [
-      { nome: 'A Agonia de Jesus no Horto das Oliveiras', reflexao: '' },
-      { nome: 'A Flagelação de Jesus na coluna', reflexao: '' },
-      { nome: 'A Coroação de Espinhos', reflexao: '' },
-      { nome: 'Jesus carrega a Cruz até o Calvário', reflexao: '' },
-      { nome: 'A Crucificação e Morte de Jesus', reflexao: '' },
-    ],
+      
+      { nome: "A Agonia de Jesus no Horto das Oliveiras", reflexao: "Contemplamos Jesus no Jardim das Oliveiras, diante do sofrimento que se aproximava. Em profunda angústia, Ele entrega-Se à vontade do Pai." },
+      { nome: "A Flagelação de Jesus", reflexao: "Contemplamos Jesus sendo cruelmente flagelado por nossa salvação. O Senhor suporta as dores e humilhações por amor à humanidade." },
+      { nome: "A Coroação de Jesus com Espinhos", reflexao: "Contemplamos Jesus sendo coroado com espinhos e humilhado como falso rei. Aquele que é verdadeiramente Rei aceita a humilhação por amor a nós." },
+      { nome: "Jesus carrega a Cruz até o Calvário", reflexao: "Contemplamos Jesus carregando Sua pesada Cruz até o lugar de Sua crucificação. Mesmo enfraquecido, Ele segue o caminho por amor a nós." },
+      { nome: "A Crucificação e Morte de Jesus na cruz", reflexao: "Contemplamos Jesus pregado na Cruz, entregando Sua vida pela salvação da humanidade. No Calvário, Cristo revela o amor infinito de Deus." }
+    
+    ]
   },
   gloriosos: {
-    nome: 'Mistérios Gloriosos',
-    icone: '✨',
-    dias: ['Quarta-feira', 'Domingo'],
+    nome: "Mistérios Gloriosos",
+    icone: "✨",
+    dias: ["Quarta-feira", "Domingo"],
     lista: [
-      { nome: 'A Ressurreição de Jesus ao terceiro dia', reflexao: '' },
-      { nome: 'A Ascensão de Jesus ao Céu', reflexao: '' },
-      { nome: 'A Vinda do Espírito Santo sobre os Apóstolos', reflexao: '' },
-      { nome: 'A Assunção de Maria ao Céu', reflexao: '' },
-      { nome: 'A Coroação de Maria como Rainha do Céu e da Terra', reflexao: '' },
-    ],
+      
+      { nome: "A Ressurreição de Jesus ao terceiro dia", reflexao: "Contemplamos Jesus ressuscitado, vencendo a morte e abrindo para nós o caminho da vida eterna. A tristeza dos discípulos transforma-se em alegria." },
+      { nome: "A Ascensão de Jesus ao Céu", reflexao: "Contemplamos Jesus subindo ao Céu e retornando à glória do Pai. Antes de partir, confia aos discípulos a missão de anunciar o Evangelho." },
+      { nome: "A Vinda do Espírito Santo", reflexao: "Contemplamos o Espírito Santo descendo sobre Maria e os Apóstolos reunidos no Cenáculo. Cheios do Espírito, eles recebem força para anunciar o Evangelho." },
+      { nome: "A Assunção de Maria ao Céu", reflexao: "Contemplamos Maria sendo elevada ao Céu de corpo e alma, participando da glória de seu Filho. Ela é sinal da esperança que aguarda todos aqueles que permanecem fiéis a Deus." },
+      { nome: "A Coroação de Maria como Rainha do Céu e da Terra", reflexao: "Contemplamos Maria coroada como Rainha do Céu e da Terra, exaltada por Deus por sua humildade, fé e fidelidade." }
+    
+    ]
   },
   luminosos: {
-    nome: 'Mistérios Luminosos',
-    icone: '💡',
-    dias: ['Quinta-feira'],
+    nome: "Mistérios Luminosos",
+    icone: "💡",
+    dias: ["Quinta-feira"],
     lista: [
-      { nome: 'O Batismo de Jesus no Rio Jordão', reflexao: '' },
-      { nome: 'A Auto-revelação de Jesus nas Bodas de Caná', reflexao: '' },
-      { nome: 'O Anúncio do Reino de Deus e o chamado à conversão', reflexao: '' },
-      { nome: 'A Transfiguração de Jesus no Monte Tabor', reflexao: '' },
-      { nome: 'A Instituição da Eucaristia na Última Ceia', reflexao: '' },
+      
+      { nome: "O Batismo de Jesus no Rio Jordão", reflexao: "Contemplamos Jesus sendo batizado por João Batista no rio Jordão. O Espírito Santo desce sobre Ele e a voz do Pai proclama: “Este é o meu Filho amado”." },
+      { nome: "A Autorrevelação de Jesus nas Bodas de Caná", reflexao: "Contemplamos Jesus realizando Seu primeiro milagre, transformando água em vinho, a pedido de Sua Mãe. Maria nos ensina a confiar e fazer tudo aquilo que Jesus nos disser." },
+      { nome: "O Anúncio do Reino de Deus", reflexao: "Contemplamos Jesus anunciando o Reino de Deus, chamando todos à conversão e oferecendo a misericórdia do Pai." },
+      { nome: "A Transfiguração de Jesus", reflexao: "Contemplamos Jesus transfigurado no alto do monte, revelando Sua glória aos discípulos. Seu rosto resplandece e Sua divindade se manifesta." },
+      { nome: "A Instituição da Eucaristia", reflexao: "Contemplamos Jesus entregando-Se por nós na Eucaristia, deixando-nos Seu Corpo e Seu Sangue como alimento e presença permanente." }
     ],
   },
 };
