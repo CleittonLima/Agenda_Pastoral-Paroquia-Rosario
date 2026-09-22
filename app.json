@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "ParoquiaRosario",
-    "slug": "ParoquiaRosario",
+    "slug": "cleiton",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -15,7 +15,8 @@
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
-      }
+      },
+      "package": "com.cleittonlimasteam.cleiton"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -23,6 +24,12 @@
     "plugins": [
       "expo-image",
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "90861ab7-536e-4a1d-9319-5cf93a412274"
+      }
+    },
+    "owner": "cleittonlimas-team"
   }
 }
