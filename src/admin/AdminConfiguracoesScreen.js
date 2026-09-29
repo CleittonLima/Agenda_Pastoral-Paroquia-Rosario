@@ -1,10 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, Image, ActivityIndicator } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
 import { useAdmin } from './AdminContext';
 import { salvarConfiguracoes, trocarSenha, enviarImagem } from '../api/api';
 import AdminHeader from './components/AdminHeader';
 import ConfirmModal from './components/ConfirmModal';
+import { useSeletorImagem } from './components/RecorteImagem';
+import { descricaoFormato } from './components/formatosImagem';
+
+// Formato de recorte de cada imagem desta tela (ver formatosImagem.js)
+const FORMATO_POR_CAMPO = {
+  LogoPrincipal: 'logo',
+  ImagemTelaInicial: 'imagemInicial',
+};
 
 export default function AdminConfiguracoesScreen() {
   const { dados, senha, recarregar, sair } = useAdmin();
@@ -17,6 +24,9 @@ export default function AdminConfiguracoesScreen() {
   const [senhaNova, setSenhaNova] = useState('');
   const [trocando, setTrocando] = useState(false);
   const [confirmandoSair, setConfirmandoSair] = useState(false);
+  const { escolherImagem: escolherComRecorte, modalRecorte } = useSeletorImagem();
+  const formAtual = useRef(form); // valores mais recentes (mesmo após esperar o envio da imagem)
+  formAtual.current = form;
 
   useEffect(() => { setForm(dados.config || {}); }, [dados.config]);
 
@@ -25,20 +35,14 @@ export default function AdminConfiguracoesScreen() {
   }
 
   async function escolherImagem(campo, setEnviando) {
-    const permissao = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permissao.granted) {
-      Alert.alert('Permissão necessária', 'Autorize o acesso às fotos.');
-      return;
-    }
-    const resultado = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.8 });
-    if (resultado.canceled) return;
+    const foto = await escolherComRecorte(FORMATO_POR_CAMPO[campo] || 'livre');
+    if (!foto) return;
 
-    const foto = resultado.assets[0];
     setEnviando(true);
     try {
-      const resposta = await enviarImagem(senha, foto.uri, foto.fileName, foto.mimeType);
+      const resposta = await enviarImagem(senha, foto.uri, foto.fileName, foto.mimeType, foto.base64);
       if (resposta.ok) {
-        const atualizado = { ...form, [campo]: resposta.url };
+        const atualizado = { ...formAtual.current, [campo]: resposta.url };
         setForm(atualizado);
         await salvarConfiguracoes(senha, { ...dados.config, ...atualizado });
         await recarregar();
@@ -46,6 +50,8 @@ export default function AdminConfiguracoesScreen() {
       } else {
         Alert.alert('Erro', resposta.erro || 'Não foi possível enviar a imagem.');
       }
+    } catch (e) {
+      Alert.alert('Erro', 'Falha ao enviar a imagem. Verifique sua internet.');
     } finally {
       setEnviando(false);
     }
@@ -97,12 +103,14 @@ export default function AdminConfiguracoesScreen() {
           rotulo="Logo principal"
           valor={form.LogoPrincipal}
           enviando={enviandoLogo}
+          dica={`${descricaoFormato('logo')} · aparece em Configurações → Sobre`}
           onEscolher={() => escolherImagem('LogoPrincipal', setEnviandoLogo)}
         />
         <ImagemComUpload
           rotulo="Imagem da tela inicial"
           valor={form.ImagemTelaInicial}
           enviando={enviandoInicial}
+          dica={descricaoFormato('imagemInicial')}
           onEscolher={() => escolherImagem('ImagemTelaInicial', setEnviandoInicial)}
         />
 
@@ -156,11 +164,12 @@ export default function AdminConfiguracoesScreen() {
         onConfirmar={() => { setConfirmandoSair(false); sair(); }}
         onCancelar={() => setConfirmandoSair(false)}
       />
+      {modalRecorte}
     </View>
   );
 }
 
-function ImagemComUpload({ rotulo, valor, enviando, onEscolher }) {
+function ImagemComUpload({ rotulo, valor, enviando, onEscolher, dica }) {
   return (
     <View style={styles.grupo}>
       <Text style={styles.rotulo}>{rotulo}</Text>
@@ -174,6 +183,7 @@ function ImagemComUpload({ rotulo, valor, enviando, onEscolher }) {
           <Text style={styles.botaoEscolherTexto}>{valor ? 'Trocar imagem' : 'Escolher imagem'}</Text>
         </TouchableOpacity>
       </View>
+      {!!dica && <Text style={styles.dicaImagem}>{dica}</Text>}
     </View>
   );
 }
@@ -189,6 +199,7 @@ const styles = StyleSheet.create({
   preview: { width: '100%', height: '100%' },
   botaoEscolher: { borderWidth: 1, borderColor: '#7A1F2B', borderRadius: 10, paddingVertical: 10, paddingHorizontal: 14 },
   botaoEscolherTexto: { color: '#7A1F2B', fontWeight: '700', fontSize: 13 },
+  dicaImagem: { fontSize: 11, color: '#8a7d6f', marginTop: 6 },
   botaoSalvar: { backgroundColor: '#7A1F2B', borderRadius: 12, paddingVertical: 15, alignItems: 'center', marginTop: 6 },
   botaoSalvarTexto: { color: '#fff', fontWeight: '700', fontSize: 15 },
   secaoSenha: { backgroundColor: '#fff', borderRadius: 14, padding: 16, marginTop: 26 },

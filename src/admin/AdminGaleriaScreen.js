@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, StyleSheet, Alert, ActivityIndicator } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useAdmin } from './AdminContext';
 import { salvarIgreja, enviarImagem } from '../api/api';
 import AdminHeader from './components/AdminHeader';
 import ConfirmModal from './components/ConfirmModal';
+import { useSeletorImagem } from './components/RecorteImagem';
+import { urlImagemOtimizada } from '../utils/imagens';
 
 function listaDeUrls(texto) {
   return String(texto || '').split(',').map(s => s.trim()).filter(Boolean);
@@ -15,20 +16,16 @@ export default function AdminGaleriaScreen() {
   const { dados, senha, recarregar } = useAdmin();
   const [enviandoId, setEnviandoId] = useState(null);
   const [fotoParaRemover, setFotoParaRemover] = useState(null); // { igreja, indice }
+  const { escolherImagem, modalRecorte } = useSeletorImagem();
 
   async function adicionarFoto(igreja) {
-    const permissao = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permissao.granted) {
-      Alert.alert('Permissão necessária', 'Autorize o acesso às fotos.');
-      return;
-    }
-    const resultado = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.7 });
-    if (resultado.canceled) return;
+    // Galeria: recorte livre ou proporções prontas (4:3, 3:4, 1:1, 16:9)
+    const foto = await escolherImagem('galeria');
+    if (!foto) return;
 
-    const foto = resultado.assets[0];
     setEnviandoId(igreja.ID);
     try {
-      const resposta = await enviarImagem(senha, foto.uri, foto.fileName, foto.mimeType);
+      const resposta = await enviarImagem(senha, foto.uri, foto.fileName, foto.mimeType, foto.base64);
       if (!resposta.ok) {
         Alert.alert('Erro', resposta.erro || 'Falha ao enviar.');
         return;
@@ -38,6 +35,8 @@ export default function AdminGaleriaScreen() {
       const salvo = await salvarIgreja(senha, { ...igreja, Galeria: fotosAtuais.join(', ') });
       if (salvo.ok) await recarregar();
       else Alert.alert('Erro', salvo.erro || 'Não foi possível salvar.');
+    } catch (e) {
+      Alert.alert('Erro', 'Falha ao enviar a foto. Verifique sua internet.');
     } finally {
       setEnviandoId(null);
     }
@@ -62,6 +61,10 @@ export default function AdminGaleriaScreen() {
     <View style={styles.container}>
       <AdminHeader titulo="Galeria de Fotos" />
       <ScrollView contentContainerStyle={styles.scroll}>
+        <Text style={styles.dica}>
+          As fotos aparecem no carrossel da igreja (Igrejas → toque na igreja). Ao adicionar, você pode
+          recortar livremente ou usar uma proporção pronta.
+        </Text>
         {dados.igrejas.map(igreja => {
           const fotos = listaDeUrls(igreja.Galeria);
           return (
@@ -84,7 +87,7 @@ export default function AdminGaleriaScreen() {
               <View style={styles.grade}>
                 {fotos.map((url, i) => (
                   <View key={i} style={styles.fotoItem}>
-                    <Image source={{ uri: url }} style={styles.foto} />
+                    <Image source={{ uri: urlImagemOtimizada(url, 300) }} style={styles.foto} />
                     <TouchableOpacity style={styles.botaoRemover} onPress={() => removerFoto(igreja, i)}>
                       <Ionicons name="close" size={14} color="#fff" />
                     </TouchableOpacity>
@@ -104,6 +107,7 @@ export default function AdminGaleriaScreen() {
         onConfirmar={executarRemocao}
         onCancelar={() => setFotoParaRemover(null)}
       />
+      {modalRecorte}
     </View>
   );
 }
@@ -111,6 +115,7 @@ export default function AdminGaleriaScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FAF7F2' },
   scroll: { padding: 16, paddingBottom: 32 },
+  dica: { fontSize: 12, color: '#8a7d6f', marginBottom: 14, lineHeight: 17 },
   grupo: {
     backgroundColor: '#fff', borderRadius: 14, padding: 14, marginBottom: 16,
     shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 4, elevation: 1,

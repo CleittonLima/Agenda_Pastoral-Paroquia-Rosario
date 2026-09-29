@@ -1,4 +1,4 @@
-import * as FileSystem from 'expo-file-system';
+import { File } from 'expo-file-system';
 import { Platform } from 'react-native';
 
 // ============================================================
@@ -86,11 +86,20 @@ export async function salvarConfiguracoes(senha, item) {
 // de verdade, e o expo-file-system consegue ler direto. Já no modo Web
 // (navegador), o "uri" vem como "blob:..." — o expo-file-system NÃO
 // consegue ler isso, então usamos fetch + FileReader nesse caso.
+//
+// Se a imagem já vier em Base64 (ex.: depois da ferramenta de recorte),
+// ela é enviada direto, sem precisar ler o arquivo de novo.
+//
+// Obs.: a partir do Expo SDK 54, as funções antigas do expo-file-system
+// (readAsStringAsync etc.) dão erro se importadas de "expo-file-system".
+// Por isso a leitura no celular usa a API nova (classe File).
 // ============================================================
-export async function enviarImagem(senha, uriLocal, nomeArquivo, tipoMime) {
+export async function enviarImagem(senha, uriLocal, nomeArquivo, tipoMime, base64Pronto) {
   let base64;
 
-  if (Platform.OS === 'web') {
+  if (base64Pronto) {
+    base64 = String(base64Pronto).split(',').pop();
+  } else if (Platform.OS === 'web') {
     const blob = await (await fetch(uriLocal)).blob();
     base64 = await new Promise((resolver, rejeitar) => {
       const leitor = new FileReader();
@@ -99,9 +108,7 @@ export async function enviarImagem(senha, uriLocal, nomeArquivo, tipoMime) {
       leitor.readAsDataURL(blob);
     });
   } else {
-    base64 = await FileSystem.readAsStringAsync(uriLocal, {
-      encoding: FileSystem.EncodingType.Base64,
-    });
+    base64 = await new File(uriLocal).base64();
   }
 
   return chamarApi('adminUploadImagem', {

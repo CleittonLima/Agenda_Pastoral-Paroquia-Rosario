@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, Image, ActivityIndicator } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
 import { useAdmin } from './AdminContext';
 import { salvarConfiguracoes, enviarImagem } from '../api/api';
 import AdminHeader from './components/AdminHeader';
+import { useSeletorImagem } from './components/RecorteImagem';
+import { descricaoFormato } from './components/formatosImagem';
 
 const CAMPOS = [
   ['Instagram', 'Instagram'],
@@ -19,6 +20,9 @@ export default function AdminRedesSociaisScreen() {
   const [form, setForm] = useState({});
   const [salvando, setSalvando] = useState(false);
   const [enviandoImagem, setEnviandoImagem] = useState(false);
+  const { escolherImagem, modalRecorte } = useSeletorImagem();
+  const formAtual = useRef(form); // valores mais recentes (mesmo após esperar o envio da imagem)
+  formAtual.current = form;
 
   useEffect(() => { setForm(dados.config || {}); }, [dados.config]);
 
@@ -35,20 +39,14 @@ export default function AdminRedesSociaisScreen() {
   }
 
   async function escolherImagemCard() {
-    const permissao = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permissao.granted) {
-      Alert.alert('Permissão necessária', 'Autorize o acesso às fotos.');
-      return;
-    }
-    const resultado = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.8 });
-    if (resultado.canceled) return;
+    const foto = await escolherImagem('cardRedeSocial');
+    if (!foto) return;
 
-    const foto = resultado.assets[0];
     setEnviandoImagem(true);
     try {
-      const resposta = await enviarImagem(senha, foto.uri, foto.fileName, foto.mimeType);
+      const resposta = await enviarImagem(senha, foto.uri, foto.fileName, foto.mimeType, foto.base64);
       if (resposta.ok) {
-        const atualizado = { ...form, RedeSocialImagem: resposta.url };
+        const atualizado = { ...formAtual.current, RedeSocialImagem: resposta.url };
         setForm(atualizado);
         await salvarConfiguracoes(senha, { ...dados.config, ...atualizado });
         await recarregar();
@@ -56,6 +54,8 @@ export default function AdminRedesSociaisScreen() {
       } else {
         Alert.alert('Erro', resposta.erro || 'Não foi possível enviar a imagem.');
       }
+    } catch (e) {
+      Alert.alert('Erro', 'Falha ao enviar a imagem. Verifique sua internet.');
     } finally {
       setEnviandoImagem(false);
     }
@@ -82,6 +82,7 @@ export default function AdminRedesSociaisScreen() {
               <Text style={styles.botaoEscolherTexto}>{form.RedeSocialImagem ? 'Trocar imagem' : 'Escolher imagem'}</Text>
             </TouchableOpacity>
           </View>
+          <Text style={styles.dicaImagem}>{descricaoFormato('cardRedeSocial')}</Text>
 
           <View style={styles.grupo}>
             <Text style={styles.rotulo}>Nome do card</Text>
@@ -109,6 +110,7 @@ export default function AdminRedesSociaisScreen() {
           {salvando ? <ActivityIndicator color="#fff" /> : <Text style={styles.botaoSalvarTexto}>Salvar</Text>}
         </TouchableOpacity>
       </ScrollView>
+      {modalRecorte}
     </View>
   );
 }
@@ -122,7 +124,8 @@ const styles = StyleSheet.create({
   grupo: { marginBottom: 14 },
   rotulo: { fontSize: 12, fontWeight: '700', color: '#5a5048', marginBottom: 6 },
   input: { borderWidth: 1, borderColor: '#e3ddd2', borderRadius: 10, padding: 11, fontSize: 14, color: '#2b2320', backgroundColor: '#fff' },
-  imagemLinha: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 14 },
+  imagemLinha: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 6 },
+  dicaImagem: { fontSize: 11, color: '#8a7d6f', marginBottom: 14 },
   previewCaixa: { width: 60, height: 60, borderRadius: 10, backgroundColor: '#FAF7F2', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderWidth: 1, borderColor: '#e3ddd2' },
   preview: { width: '100%', height: '100%' },
   botaoEscolher: { borderWidth: 1, borderColor: '#7A1F2B', borderRadius: 10, paddingVertical: 10, paddingHorizontal: 14 },

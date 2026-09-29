@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert, ActivityIndicator } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
 import { enviarImagem } from '../../api/api';
 import { useAdmin } from '../AdminContext';
 import SeletorOpcoes from './SeletorOpcoes';
+import CampoDataHora from './SeletorDataHora';
+import { useSeletorImagem } from './RecorteImagem';
+import { descricaoFormato } from './formatosImagem';
 
 export default function CampoFormulario({ campo, valor, onMudar, igrejas }) {
   const { senha } = useAdmin();
   const [enviando, setEnviando] = useState(false);
+  const { escolherImagem: escolherComRecorte, modalRecorte } = useSeletorImagem();
 
   if (campo.tipo === 'select') {
     return (
@@ -57,23 +60,21 @@ export default function CampoFormulario({ campo, valor, onMudar, igrejas }) {
     );
   }
 
-  if (campo.tipo === 'imagem') {
-    async function escolherImagem() {
-      const permissao = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permissao.granted) {
-        Alert.alert('Permissão necessária', 'Autorize o acesso às fotos para enviar uma imagem.');
-        return;
-      }
-      const resultado = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 0.7,
-      });
-      if (resultado.canceled) return;
+  // Datas e horários: campo de texto + calendário / seletor de horário
+  if (campo.tipo === 'date' || campo.tipo === 'time') {
+    return <CampoDataHora tipo={campo.tipo} rotulo={campo.rotulo} valor={valor} onMudar={onMudar} />;
+  }
 
-      const foto = resultado.assets[0];
+  if (campo.tipo === 'imagem') {
+    // Abre a galeria e depois a ferramenta de recorte no formato do local
+    // onde a imagem aparece (campo.formatoImagem — ver formatosImagem.js)
+    async function escolherImagem() {
+      const foto = await escolherComRecorte(campo.formatoImagem || 'livre');
+      if (!foto) return;
+
       setEnviando(true);
       try {
-        const resposta = await enviarImagem(senha, foto.uri, foto.fileName, foto.mimeType);
+        const resposta = await enviarImagem(senha, foto.uri, foto.fileName, foto.mimeType, foto.base64);
         if (resposta.ok) {
           onMudar(resposta.url);
         } else {
@@ -103,6 +104,8 @@ export default function CampoFormulario({ campo, valor, onMudar, igrejas }) {
             <Text style={styles.botaoEscolherTexto}>{valor ? 'Trocar imagem' : 'Escolher imagem'}</Text>
           </TouchableOpacity>
         </View>
+        {!!campo.formatoImagem && <Text style={styles.dicaImagem}>{descricaoFormato(campo.formatoImagem)}</Text>}
+        {modalRecorte}
       </View>
     );
   }
@@ -125,7 +128,7 @@ export default function CampoFormulario({ campo, valor, onMudar, igrejas }) {
     );
   }
 
-  // text, url, date, time, number (campo simples de texto)
+  // text, url, number (campo simples de texto) — date e time usam o CampoDataHora acima
   const placeholders = { date: 'AAAA-MM-DD', time: 'HH:MM' };
   return (
     <View style={styles.grupo}>
@@ -159,6 +162,7 @@ const styles = StyleSheet.create({
   preview: { width: '100%', height: '100%' },
   botaoEscolher: { borderWidth: 1, borderColor: '#7A1F2B', borderRadius: 10, paddingVertical: 10, paddingHorizontal: 14 },
   botaoEscolherTexto: { color: '#7A1F2B', fontWeight: '700', fontSize: 13 },
+  dicaImagem: { fontSize: 11, color: '#8a7d6f', marginTop: 6 },
   corLinha: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   corPreview: { width: 40, height: 40, borderRadius: 10, borderWidth: 1, borderColor: '#e3ddd2' },
 });

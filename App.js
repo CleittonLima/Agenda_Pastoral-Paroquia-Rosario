@@ -31,6 +31,7 @@ import AdminPixScreen from './src/admin/AdminPixScreen';
 import AdminGaleriaScreen from './src/admin/AdminGaleriaScreen';
 import AdminRedesSociaisScreen from './src/admin/AdminRedesSociaisScreen';
 import AdminConfiguracoesScreen from './src/admin/AdminConfiguracoesScreen';
+import AdminPdfScreen from './src/admin/AdminPdfScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -115,6 +116,7 @@ function AppRoot() {
         <Stack.Screen name="AdminGaleria" component={AdminGaleriaScreen} />
         <Stack.Screen name="AdminRedesSociais" component={AdminRedesSociaisScreen} />
         <Stack.Screen name="AdminConfiguracoes" component={AdminConfiguracoesScreen} />
+        <Stack.Screen name="AdminPdf" component={AdminPdfScreen} />
       </Stack.Navigator>
     );
   }

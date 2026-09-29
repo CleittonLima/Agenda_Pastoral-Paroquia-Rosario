@@ -12,6 +12,7 @@ const SECOES = [
   { id: 'AdminPix', icone: 'cash-outline', titulo: 'Oferta (PIX)', desc: 'QR Code e chave PIX' },
   { id: 'AdminGaleria', icone: 'images-outline', titulo: 'Galeria', desc: 'Fotos de cada igreja' },
   { id: 'AdminRedesSociais', icone: 'share-social-outline', titulo: 'Redes Sociais', desc: 'Instagram, WhatsApp e mais' },
+  { id: 'AdminPdf', icone: 'document-text-outline', titulo: 'PDF para os fiéis', desc: 'Logo e cabeçalho do PDF' },
   { id: 'AdminConfiguracoes', icone: 'settings-outline', titulo: 'Configurações Gerais', desc: 'Dados da paróquia e senha' },
 ];
 

@@ -136,6 +136,11 @@ function mapearConfiguracoes(linha) {
     endereco: linha.Endereco || '',
     redeSocialNome: linha.RedeSocialNome || '',
     redeSocialImagem: linha.RedeSocialImagem || '',
+    // PDF para os fiéis (Configurações → Baixar PDF) — definidos no Painel ADM
+    pdfLogo: linha.PdfLogo || '',
+    pdfTitulo: linha.PdfTitulo || '',
+    pdfSubtitulo: linha.PdfSubtitulo || '',
+    pdfInfo: linha.PdfInfo || '',
   };
 }
 

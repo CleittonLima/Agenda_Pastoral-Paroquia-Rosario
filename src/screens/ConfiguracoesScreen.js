@@ -8,6 +8,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../context/AppContext';
 import { AVATARES } from '../data/avatares';
 import { CATEGORIAS_TEMAS, encontrarTema, temasDaCategoria } from '../data/temas';
+import BaixarPdfIgrejas from '../components/BaixarPdfIgrejas';
+import { urlImagemOtimizada } from '../utils/imagens';
 
 export default function ConfiguracoesScreen() {
   const navigation = useNavigation();
@@ -97,6 +99,9 @@ export default function ConfiguracoesScreen() {
             ))}
           </ScrollView>
         </View>
+
+        {/* ---- BAIXAR PDF (horários, avisos e eventos das igrejas) ---- */}
+        <BaixarPdfIgrejas />
 
         {/* ---- TEMA VISUAL ---- */}
         <View style={[styles.grupo, { backgroundColor: temaCores.corCard }]}>
@@ -219,6 +224,14 @@ export default function ConfiguracoesScreen() {
         {/* ---- SOBRE ---- */}
         <View style={[styles.grupo, { backgroundColor: temaCores.corCard, alignItems: 'center' }]}>
           <Text style={[styles.grupoTitulo, { color: temaCores.corTexto }]}>Sobre</Text>
+          {/* Logo da paróquia — alterada pelo Painel ADM → Configurações Gerais → Logo principal */}
+          <Image
+            source={config.logoPrincipal
+              ? { uri: urlImagemOtimizada(config.logoPrincipal, 300) }
+              : require('../../assets/logos/brasao.webp')}
+            style={styles.sobreLogo}
+            resizeMode="contain"
+          />
           <Text style={[styles.sobreTexto, { color: temaCores.corTexto }]}>{config.nomeParoquia || 'Paróquia Nossa Senhora do Rosário'}</Text>
           {!!config.endereco && <Text style={[styles.sobreMeta, { color: temaCores.corTextoSecundario }]}>{config.endereco}</Text>}
           {!!config.telefone && <Text style={[styles.sobreMeta, { color: temaCores.corTextoSecundario }]}>{config.telefone}</Text>}
@@ -277,6 +290,7 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: '#B23A2E',
   },
   botaoPerigoTexto: { color: '#B23A2E', fontWeight: '700', fontSize: 14 },
+  sobreLogo: { width: 76, height: 76, marginTop: 2, marginBottom: 8 },
   sobreTexto: { fontSize: 14, fontWeight: '700', color: '#2b2320', marginTop: 4 },
   sobreMeta: { fontSize: 12, color: '#8a7d6f', marginTop: 3 },
   sobreVersao: { fontSize: 11, color: '#a89b8c', marginTop: 10 },

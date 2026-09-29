@@ -14,7 +14,7 @@ const config = {
   campos: [
     { nome: 'Nome', rotulo: 'Nome', tipo: 'text' },
     { nome: 'Cor', rotulo: 'Cor de identificação', tipo: 'color' },
-    { nome: 'FotoPrincipal', rotulo: 'Foto principal (proporção 4:3)', tipo: 'imagem' },
+    { nome: 'FotoPrincipal', rotulo: 'Foto principal (proporção 4:3)', tipo: 'imagem', formatoImagem: 'fotoIgreja' },
     { nome: 'Endereco', rotulo: 'Endereço', tipo: 'text' },
     { nome: 'GoogleMaps', rotulo: 'Link do Google Maps', tipo: 'url' },
     { nome: 'WhatsApp', rotulo: 'WhatsApp (DDI + DDD, só números)', tipo: 'text' },

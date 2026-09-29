@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, Image, ActivityIndicator } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
 import { useAdmin } from './AdminContext';
 import { salvarPix, enviarImagem } from '../api/api';
 import AdminHeader from './components/AdminHeader';
+import { useSeletorImagem } from './components/RecorteImagem';
+import { descricaoFormato } from './components/formatosImagem';
 
 export default function AdminPixScreen() {
   const { dados, senha, recarregar } = useAdmin();
@@ -11,6 +12,9 @@ export default function AdminPixScreen() {
   const [form, setForm] = useState({});
   const [enviandoImagem, setEnviandoImagem] = useState(false);
   const [salvando, setSalvando] = useState(false);
+  const { escolherImagem, modalRecorte } = useSeletorImagem();
+  const formAtual = useRef(form); // valores mais recentes (mesmo após esperar o envio da imagem)
+  formAtual.current = form;
 
   useEffect(() => { setForm(pix); }, [dados.pix]);
 
@@ -19,20 +23,14 @@ export default function AdminPixScreen() {
   }
 
   async function escolherQrCode() {
-    const permissao = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permissao.granted) {
-      Alert.alert('Permissão necessária', 'Autorize o acesso às fotos para enviar o QR Code.');
-      return;
-    }
-    const resultado = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.8 });
-    if (resultado.canceled) return;
+    const foto = await escolherImagem('qrcode');
+    if (!foto) return;
 
-    const foto = resultado.assets[0];
     setEnviandoImagem(true);
     try {
-      const resposta = await enviarImagem(senha, foto.uri, foto.fileName, foto.mimeType);
+      const resposta = await enviarImagem(senha, foto.uri, foto.fileName, foto.mimeType, foto.base64);
       if (resposta.ok) {
-        const atualizado = { ...form, QRCode: resposta.url };
+        const atualizado = { ...formAtual.current, QRCode: resposta.url };
         setForm(atualizado);
         // Salva na hora — não depende de clicar em "Salvar" separadamente
         await salvarPix(senha, atualizado);
@@ -41,6 +39,8 @@ export default function AdminPixScreen() {
       } else {
         Alert.alert('Erro', resposta.erro || 'Não foi possível enviar a imagem.');
       }
+    } catch (e) {
+      Alert.alert('Erro', 'Falha ao enviar a imagem. Verifique sua internet.');
     } finally {
       setEnviandoImagem(false);
     }
@@ -73,6 +73,7 @@ export default function AdminPixScreen() {
             <Text style={styles.botaoEscolherTexto}>{form.QRCode ? 'Trocar QR Code' : 'Escolher QR Code'}</Text>
           </TouchableOpacity>
         </View>
+        <Text style={styles.dicaImagem}>{descricaoFormato('qrcode')}</Text>
 
         {[
           ['TipoChave', 'Tipo da chave'],
@@ -109,6 +110,7 @@ export default function AdminPixScreen() {
           {salvando ? <ActivityIndicator color="#fff" /> : <Text style={styles.botaoSalvarTexto}>Salvar</Text>}
         </TouchableOpacity>
       </ScrollView>
+      {modalRecorte}
     </View>
   );
 }
@@ -120,7 +122,8 @@ const styles = StyleSheet.create({
   rotulo: { fontSize: 12, fontWeight: '700', color: '#5a5048', marginBottom: 6 },
   input: { borderWidth: 1, borderColor: '#e3ddd2', borderRadius: 10, padding: 11, fontSize: 14, color: '#2b2320', backgroundColor: '#fff' },
   textarea: { minHeight: 80, textAlignVertical: 'top' },
-  imagemLinha: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
+  imagemLinha: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 6 },
+  dicaImagem: { fontSize: 11, color: '#8a7d6f', marginBottom: 16 },
   previewCaixa: { width: 70, height: 70, borderRadius: 10, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderWidth: 1, borderColor: '#e3ddd2' },
   preview: { width: '100%', height: '100%' },
   botaoEscolher: { borderWidth: 1, borderColor: '#7A1F2B', borderRadius: 10, paddingVertical: 10, paddingHorizontal: 14 },
