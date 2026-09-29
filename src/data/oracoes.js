@@ -225,17 +225,17 @@ export const TERCOS = [
       {
         tipo: 'oracao',
         titulo: 'Salve Rainha',
-        texto: 'Salve Rainha, mãe de misericórdia,\nvida, doçura, esperança nossa, salve!\n\nA vós bradamos, os degredados filhos de Eva;\na vós suspiramos, gemendo e chorando\nneste vale de lágrimas.\n\nEia, pois, advogada nossa,\nesses vossos olhos misericordiosos a nós volvei;\ne depois deste desterro,\nmostrai-nos Jesus, bendito fruto do vosso ventre.\n\nÓ clemente, ó piedosa,\nó doce sempre Virgem Maria. Amém.',
+        texto: 'Salve Rainha, mãe de misericórdia,\nvida, doçura, esperança nossa, salve!\n\nA vós bradamos, os degredados filhos de Eva;\na vós suspiramos, gemendo e chorando\nneste vale de lágrimas.\n\nEia, pois, advogada nossa,\nesses vossos olhos misericordiosos a nós volvei;\ne depois deste desterro,\nmostrai-nos Jesus, bendito fruto do vosso ventre.\n\nÓ clemente, ó piedosa,\nó doce sempre Virgem Maria. Rogai por nós Santa mãe de Deus, para que sejamos dignos das promessas de Cristo. Amém.',
       },
     ],
   },
 
-  /* ---- COROA DA DIVINA MISERICÓRDIA ---- */
+  /* ---- Terço DA DIVINA MISERICÓRDIA ---- */
   {
     id: 'misericordia',
-    nome: 'Coroa da Divina Misericórdia',
-    descricao: 'Reze a Coroa da Divina Misericórdia, revelada a Santa Faustina.',
-    status: 'inativo',
+    nome: 'Terço da Divina Misericórdia',
+    descricao: 'Reze o Terço da Divina Misericórdia, revelada a Santa Faustina.',
+    status: 'ativo',
     imagem: '',
     conclusao: 'Ó Sangue e Água que jorrastes do Coração de Jesus como uma Fonte de Misericórdia para nós, eu confio em Vós! 🕊️',
     partes: [
@@ -261,7 +261,7 @@ export const TERCOS = [
         tipo: 'oracao',
         titulo: 'Oração final',
         subtitulo: '(Repita três vezes)',
-        texto: 'Santo Deus, Santo Forte, Santo Imortal,\ntende misericórdia de nós e do mundo inteiro.',
+        texto: 'Deus Santo, Deus Forte, Deus Imortal,\ntende misericórdia de nós e do mundo inteiro.',
       },
     ],
   },
