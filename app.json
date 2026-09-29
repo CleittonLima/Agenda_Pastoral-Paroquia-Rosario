@@ -4,7 +4,7 @@
     "slug": "cleiton",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/logos/brasao1.png",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true
@@ -16,14 +16,15 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "package": "com.cleittonlimasteam.cleiton"
+      "package": "com.cleittonlimasteam.paroquiarosario"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "expo-image",
-      "expo-font"
+      "expo-font",
+      "expo-image-picker"
     ],
     "extra": {
       "eas": {
