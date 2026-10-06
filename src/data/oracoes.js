@@ -17,7 +17,7 @@ export const ORACOES = [
     nome: 'Pai-Nosso',
     categoria: 'Dia a dia',
     cor: '#7A1F2B',
-    imagem: '',
+    imagem: 'assets/oracoes/Pai Nosso.webp',
     texto: 'Pai nosso que estais nos céus,\nsantificado seja o vosso nome;\nvenha a nós o vosso reino;\nseja feita a vossa vontade,\nassim na terra como no céu.\n\nO pão nosso de cada dia nos dai hoje;\nperdoai-nos as nossas ofensas,\nassim como nós perdoamos a quem nos tem ofendido;\ne não nos deixeis cair em tentação,\nmas livrai-nos do mal. Amém.',
   },
   {
@@ -154,7 +154,6 @@ export const MISTERIOS = {
 };
 
 // Qual mistério rezar em cada dia da semana
-// índice 0 = Domingo … 6 = Sábado (igual ao Date.getDay() do JavaScript)
 export const MISTERIO_POR_DIA = [
   'gloriosos',  // Domingo
   'gozosos',    // Segunda-feira
@@ -230,7 +229,7 @@ export const TERCOS = [
     ],
   },
 
-  /* ---- Terço DA DIVINA MISERICÓRDIA ---- */
+  /* ---- TERÇO DA DIVINA MISERICÓRDIA ---- */
   {
     id: 'misericordia',
     nome: 'Terço da Divina Misericórdia',
