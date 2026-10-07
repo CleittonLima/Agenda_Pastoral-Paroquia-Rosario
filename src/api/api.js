@@ -1,120 +1,201 @@
-import { File } from 'expo-file-system';
-import { Platform } from 'react-native';
+import { supabase } from '../supabase/config';
 
 // ============================================================
-// COLE AQUI A URL DO SEU APPS SCRIPT (a mesma do site)
+// BUSCAR DADOS PÚBLICOS
+// Mantém o mesmo formato que o aplicativo recebia do Apps Script
 // ============================================================
-const URL_API =
-  'https://script.google.com/macros/s/AKfycbwBc-xtZ1bLuxkqTCKQDqI-bh533x2h20cuS5CrWtjCNdxxCDR4L8KzUqdxl6e5KfgoAA/exec';
-
-async function chamarApi(action, dados = {}) {
-  const resposta = await fetch(URL_API, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ action, dados }),
-  });
-  return resposta.json();
-}
-
-// Leitura pública — usada pelo app na abertura
 export async function buscarTudo() {
-  return chamarApi('getData', {});
-}
+  try {
+    // ==========================================================
+    // IGREJAS
+    // ==========================================================
+    const { data: igrejasDB, error: igrejasError } = await supabase
+      .from('igrejas')
+      .select('*')
+      .order('ordem', { ascending: true });
 
-// Leitura completa — painel do coordenador (inclui Inativos)
-export async function buscarTudoAdmin(senha) {
-  return chamarApi('adminGetData', { senha });
-}
+    if (igrejasError) throw igrejasError;
 
-// Login / senha
-export async function login(senha) {
-  return chamarApi('login', { senha });
-}
-export async function trocarSenha(senhaAtual, novaSenha) {
-  return chamarApi('adminTrocarSenha', { senhaAtual, novaSenha });
-}
+    // Apenas igrejas ativas, como acontecia no Apps Script
+    const igrejas = (igrejasDB || [])
+      .filter(
+        item =>
+          String(item.status || '').toLowerCase() !== 'inativo'
+      )
+      .map(item => ({
+        ID: item.id,
+        Nome: item.nome,
+        Cor: item.cor,
+        Logo: item.logo,
+        FotoPrincipal: item.foto_principal,
+        Galeria: item.galeria,
+        Endereco: item.endereco,
+        GoogleMaps: item.google_maps,
+        WhatsApp: item.whatsapp,
+        Instagram: item.instagram,
+        Facebook: item.facebook,
+        Youtube: item.youtube,
+        Ordem: item.ordem,
+        Status: item.status,
+      }));
 
-// CRUD — Igrejas
-export async function salvarIgreja(senha, item) {
-  return chamarApi('adminSalvarIgreja', { senha, item });
-}
-export async function excluirIgreja(senha, id) {
-  return chamarApi('adminExcluirIgreja', { senha, id });
-}
+    // Mapa para descobrir o nome da igreja através do igreja_id
+    const igrejasPorId = {};
 
-// CRUD — Horários
-export async function salvarHorario(senha, item) {
-  return chamarApi('adminSalvarHorario', { senha, item });
-}
-export async function excluirHorario(senha, id) {
-  return chamarApi('adminExcluirHorario', { senha, id });
-}
-
-// CRUD — Avisos
-export async function salvarAviso(senha, item) {
-  return chamarApi('adminSalvarAviso', { senha, item });
-}
-export async function excluirAviso(senha, id) {
-  return chamarApi('adminExcluirAviso', { senha, id });
-}
-
-// CRUD — Eventos
-export async function salvarEvento(senha, item) {
-  return chamarApi('adminSalvarEvento', { senha, item });
-}
-export async function excluirEvento(senha, id) {
-  return chamarApi('adminExcluirEvento', { senha, id });
-}
-
-// PIX
-export async function salvarPix(senha, item) {
-  return chamarApi('adminSalvarPix', { senha, item });
-}
-
-// Configurações gerais
-export async function salvarConfiguracoes(senha, item) {
-  return chamarApi('adminSalvarConfiguracoes', { senha, item });
-}
-
-// ============================================================
-// UPLOAD DE IMAGEM
-// Recebe o "uri" local de uma imagem (escolhida via expo-image-picker),
-// converte para Base64 e manda para o Code.gs, que salva no Google
-// Drive e devolve a URL pronta para usar.
-//
-// IMPORTANTE: no celular (Android/iOS), o "uri" é um caminho de arquivo
-// de verdade, e o expo-file-system consegue ler direto. Já no modo Web
-// (navegador), o "uri" vem como "blob:..." — o expo-file-system NÃO
-// consegue ler isso, então usamos fetch + FileReader nesse caso.
-//
-// Se a imagem já vier em Base64 (ex.: depois da ferramenta de recorte),
-// ela é enviada direto, sem precisar ler o arquivo de novo.
-//
-// Obs.: a partir do Expo SDK 54, as funções antigas do expo-file-system
-// (readAsStringAsync etc.) dão erro se importadas de "expo-file-system".
-// Por isso a leitura no celular usa a API nova (classe File).
-// ============================================================
-export async function enviarImagem(senha, uriLocal, nomeArquivo, tipoMime, base64Pronto) {
-  let base64;
-
-  if (base64Pronto) {
-    base64 = String(base64Pronto).split(',').pop();
-  } else if (Platform.OS === 'web') {
-    const blob = await (await fetch(uriLocal)).blob();
-    base64 = await new Promise((resolver, rejeitar) => {
-      const leitor = new FileReader();
-      leitor.onloadend = () => resolver(leitor.result.split(',').pop());
-      leitor.onerror = rejeitar;
-      leitor.readAsDataURL(blob);
+    igrejas.forEach(igreja => {
+      igrejasPorId[igreja.ID] = igreja.Nome;
     });
-  } else {
-    base64 = await new File(uriLocal).base64();
-  }
 
-  return chamarApi('adminUploadImagem', {
-    senha,
-    base64: `data:${tipoMime || 'image/jpeg'};base64,${base64}`,
-    nomeArquivo: nomeArquivo || `imagem-${Date.now()}.jpg`,
-    tipoMime: tipoMime || 'image/jpeg',
-  });
+    // ==========================================================
+    // HORÁRIOS
+    // ==========================================================
+    const { data: horariosDB, error: horariosError } = await supabase
+      .from('horarios')
+      .select('*');
+
+    if (horariosError) throw horariosError;
+
+    const horarios = (horariosDB || [])
+      .filter(
+        item =>
+          String(item.status || '').toLowerCase() !== 'inativo'
+      )
+      .map(item => ({
+        ID: item.id,
+        Igreja: igrejasPorId[item.igreja_id] || '',
+        Nome: item.nome,
+        Tipo: item.tipo,
+        Data: item.data,
+        Hora: item.hora,
+        HoraFim: item.hora_fim,
+        Recorrencia: item.recorrencia,
+        Observacao: item.observacao,
+        Status: item.status,
+      }));
+
+    // ==========================================================
+    // AVISOS
+    // ==========================================================
+    const { data: avisosDB, error: avisosError } = await supabase
+      .from('avisos')
+      .select('*');
+
+    if (avisosError) throw avisosError;
+
+    const avisos = (avisosDB || [])
+      .filter(
+        item =>
+          String(item.status || '').toLowerCase() !== 'inativo'
+      )
+      .map(item => ({
+        ID: item.id,
+        Igreja: igrejasPorId[item.igreja_id] || '',
+        Titulo: item.titulo,
+        Texto: item.texto,
+        Prioridade: item.prioridade,
+        Data: item.data,
+        Status: item.status,
+      }));
+
+    // ==========================================================
+    // EVENTOS
+    // ==========================================================
+    const { data: eventosDB, error: eventosError } = await supabase
+      .from('eventos')
+      .select('*');
+
+    if (eventosError) throw eventosError;
+
+    const eventos = (eventosDB || [])
+      .filter(
+        item =>
+          String(item.status || '').toLowerCase() !== 'inativo'
+      )
+      .map(item => ({
+        ID: item.id,
+        Igreja: igrejasPorId[item.igreja_id] || '',
+        Nome: item.nome,
+        Descricao: item.descricao,
+        Data: item.data,
+        Hora: item.hora,
+        HoraFim: item.hora_fim,
+        Local: item.local,
+        Status: item.status,
+      }));
+
+    // ==========================================================
+    // PIX
+    // ==========================================================
+    const { data: pixDB, error: pixError } = await supabase
+      .from('pix')
+      .select('*')
+      .eq('id', 1)
+      .maybeSingle();
+
+    if (pixError) throw pixError;
+
+    const pix = pixDB
+      ? {
+          QRCode: pixDB.qrcode,
+          TipoChave: pixDB.tipo_chave,
+          Chave: pixDB.chave,
+          Favorecido: pixDB.favorecido,
+          Banco: pixDB.banco,
+          Mensagem: pixDB.mensagem,
+          Tutorial: pixDB.tutorial,
+        }
+      : {};
+
+    // ==========================================================
+    // CONFIGURAÇÕES
+    // ==========================================================
+    const { data: configDB, error: configError } = await supabase
+      .from('configuracoes')
+      .select('*')
+      .eq('id', 1)
+      .maybeSingle();
+
+    if (configError) throw configError;
+
+    const config = configDB
+      ? {
+          nomeParoquia: configDB.nome_paroquia,
+          logoPrincipal: configDB.logo_principal,
+          imagemTelaInicial: configDB.imagem_tela_inicial,
+          fraseRodape: configDB.frase_rodape,
+          telefone: configDB.telefone,
+          email: configDB.email,
+          whatsapp: configDB.whatsapp,
+          instagram: configDB.instagram,
+          facebook: configDB.facebook,
+          youtube: configDB.youtube,
+          site: configDB.site,
+          drive: configDB.drive,
+          redeSocialNome: configDB.rede_social_nome,
+          redeSocialImagem: configDB.rede_social_imagem,
+          endereco: configDB.endereco,
+        }
+      : {};
+
+    // ==========================================================
+    // RETORNO
+    // ==========================================================
+    return {
+      ok: true,
+      igrejas,
+      horarios,
+      avisos,
+      eventos,
+      pix,
+      config,
+    };
+
+  } catch (erro) {
+    console.error('Erro ao buscar dados do Supabase:', erro);
+
+    return {
+      ok: false,
+      erro: erro.message || String(erro),
+    };
+  }
 }
