@@ -18,7 +18,7 @@ const SECOES = [
 
 export default function AdminMenuScreen() {
   const navigation = useNavigation();
-  const { dados, carregando, recarregar } = useAdmin();
+  const { dados, carregando, recarregar, sair } = useAdmin();
 
   useEffect(() => { recarregar(); }, []);
 
@@ -30,7 +30,10 @@ export default function AdminMenuScreen() {
           <Text style={styles.cabecalhoSubtitulo}>Paróquia N. Sra. do Rosário</Text>
         </View>
         <TouchableOpacity
-          onPress={() => navigation.navigate('Principal')}
+          onPress={async () => {
+            await sair();
+            navigation.replace('Principal');
+          }}
           style={styles.botaoVoltarApp}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >

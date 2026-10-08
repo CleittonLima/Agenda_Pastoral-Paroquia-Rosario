@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, Image, ActivityIndicator } from 'react-native';
 import { useAdmin } from './AdminContext';
-import { salvarConfiguracoes, trocarSenha, enviarImagem } from '../api/api';
+import { salvarConfiguracoes, enviarImagem } from '../api/api';
+import { supabase } from '../supabase/config';
 import AdminHeader from './components/AdminHeader';
 import ConfirmModal from './components/ConfirmModal';
 import { useSeletorImagem } from './components/RecorteImagem';
@@ -14,7 +15,7 @@ const FORMATO_POR_CAMPO = {
 };
 
 export default function AdminConfiguracoesScreen() {
-  const { dados, senha, recarregar, sair } = useAdmin();
+  const { dados, recarregar, sair } = useAdmin();
   const [form, setForm] = useState({});
   const [salvando, setSalvando] = useState(false);
   const [enviandoLogo, setEnviandoLogo] = useState(false);
@@ -40,11 +41,16 @@ export default function AdminConfiguracoesScreen() {
 
     setEnviando(true);
     try {
-      const resposta = await enviarImagem(senha, foto.uri, foto.fileName, foto.mimeType, foto.base64);
+      const resposta = await enviarImagem(
+        foto.uri,
+        foto.fileName,
+        foto.mimeType,
+        foto.base64
+      );
       if (resposta.ok) {
         const atualizado = { ...formAtual.current, [campo]: resposta.url };
         setForm(atualizado);
-        await salvarConfiguracoes(senha, { ...dados.config, ...atualizado });
+        await salvarConfiguracoes({ ...dados.config, ...atualizado });
         await recarregar();
         Alert.alert('Pronto', 'Imagem enviada e salva!');
       } else {
@@ -59,7 +65,7 @@ export default function AdminConfiguracoesScreen() {
 
   async function salvar() {
     setSalvando(true);
-    const resultado = await salvarConfiguracoes(senha, { ...dados.config, ...form });
+    const resultado = await salvarConfiguracoes({ ...dados.config, ...form });
     setSalvando(false);
     if (resultado.ok) {
       await recarregar();
@@ -69,26 +75,75 @@ export default function AdminConfiguracoesScreen() {
     }
   }
 
-  async function alterarSenha() {
-    if (senhaNova.length < 4) {
-      Alert.alert('Atenção', 'A nova senha deve ter pelo menos 4 caracteres.');
-      return;
-    }
-    setTrocando(true);
-    const resultado = await trocarSenha(senhaAtual, senhaNova);
-    setTrocando(false);
-    if (resultado.ok) {
-      setSenhaAtual('');
-      setSenhaNova('');
-      Alert.alert('Pronto', 'Senha alterada com sucesso. Use a nova senha no próximo acesso.');
-    } else {
-      Alert.alert('Erro', resultado.erro || 'Não foi possível trocar a senha.');
-    }
+async function alterarSenha() {
+  if (senhaNova.length < 6) {
+    Alert.alert(
+      'Atenção',
+      'A nova senha deve ter pelo menos 6 caracteres.'
+    );
+    return;
   }
 
-  function confirmarSair() {
-    setConfirmandoSair(true);
+  setTrocando(true);
+
+  try {
+    // Identifica o usuário atualmente conectado
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user?.email) {
+      throw new Error('Não foi possível identificar o usuário.');
+    }
+
+    // Confirma a senha atual
+    const { error: erroSenhaAtual } =
+      await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: senhaAtual,
+      });
+
+    if (erroSenhaAtual) {
+      Alert.alert(
+        'Senha incorreta',
+        'A senha atual informada está incorreta.'
+      );
+      return;
+    }
+
+    // Altera a senha
+    const { error } = await supabase.auth.updateUser({
+      password: senhaNova,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    setSenhaAtual('');
+    setSenhaNova('');
+
+    Alert.alert(
+      'Pronto',
+      'Senha alterada com sucesso. Use a nova senha no próximo acesso.'
+    );
+
+  } catch (erro) {
+    console.error('Erro ao alterar senha:', erro);
+
+    Alert.alert(
+      'Erro',
+      erro.message || 'Não foi possível trocar a senha.'
+    );
+
+  } finally {
+    setTrocando(false);
   }
+}
+
+function confirmarSair() {
+  setConfirmandoSair(true);
+}
 
   return (
     <View style={styles.container}>

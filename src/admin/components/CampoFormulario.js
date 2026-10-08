@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { enviarImagem } from '../../api/api';
-import { useAdmin } from '../AdminContext';
 import SeletorOpcoes from './SeletorOpcoes';
 import CampoDataHora from './SeletorDataHora';
 import { useSeletorImagem } from './RecorteImagem';
 import { descricaoFormato } from './formatosImagem';
 
 export default function CampoFormulario({ campo, valor, onMudar, igrejas }) {
-  const { senha } = useAdmin();
   const [enviando, setEnviando] = useState(false);
   const { escolherImagem: escolherComRecorte, modalRecorte } = useSeletorImagem();
 
@@ -74,7 +72,12 @@ export default function CampoFormulario({ campo, valor, onMudar, igrejas }) {
 
       setEnviando(true);
       try {
-        const resposta = await enviarImagem(senha, foto.uri, foto.fileName, foto.mimeType, foto.base64);
+        const resposta = await enviarImagem(
+          foto.uri,
+          foto.fileName,
+          foto.mimeType,
+          foto.base64
+        );
         if (resposta.ok) {
           onMudar(resposta.url);
         } else {

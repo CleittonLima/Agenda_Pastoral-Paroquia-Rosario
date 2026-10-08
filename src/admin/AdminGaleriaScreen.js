@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAdmin } from './AdminContext';
-import { salvarIgreja, enviarImagem } from '../api/api';
+import { salvarIgreja, enviarImagem, excluirImagem } from '../api/api';
 import AdminHeader from './components/AdminHeader';
 import ConfirmModal from './components/ConfirmModal';
 import { useSeletorImagem } from './components/RecorteImagem';
@@ -13,7 +13,7 @@ function listaDeUrls(texto) {
 }
 
 export default function AdminGaleriaScreen() {
-  const { dados, senha, recarregar } = useAdmin();
+  const { dados, recarregar } = useAdmin();
   const [enviandoId, setEnviandoId] = useState(null);
   const [fotoParaRemover, setFotoParaRemover] = useState(null); // { igreja, indice }
   const { escolherImagem, modalRecorte } = useSeletorImagem();
@@ -25,14 +25,21 @@ export default function AdminGaleriaScreen() {
 
     setEnviandoId(igreja.ID);
     try {
-      const resposta = await enviarImagem(senha, foto.uri, foto.fileName, foto.mimeType, foto.base64);
+      const resposta = await enviarImagem(
+        foto.uri,
+        foto.fileName,
+        foto.mimeType,
+        foto.base64
+      );
       if (!resposta.ok) {
         Alert.alert('Erro', resposta.erro || 'Falha ao enviar.');
         return;
       }
       const fotosAtuais = listaDeUrls(igreja.Galeria);
       fotosAtuais.push(resposta.url);
-      const salvo = await salvarIgreja(senha, { ...igreja, Galeria: fotosAtuais.join(', ') });
+      const salvo = await salvarIgreja(
+        { ...igreja, Galeria: fotosAtuais.join(', ') }
+      );
       if (salvo.ok) await recarregar();
       else Alert.alert('Erro', salvo.erro || 'Não foi possível salvar.');
     } catch (e) {
@@ -47,15 +54,45 @@ export default function AdminGaleriaScreen() {
   }
 
   async function executarRemocao() {
-    if (!fotoParaRemover) return;
-    const { igreja, indice } = fotoParaRemover;
-    const fotosAtuais = listaDeUrls(igreja.Galeria);
-    fotosAtuais.splice(indice, 1);
-    const salvo = await salvarIgreja(senha, { ...igreja, Galeria: fotosAtuais.join(', ') });
+  if (!fotoParaRemover) return;
+
+  const { igreja, indice } = fotoParaRemover;
+  const fotosAtuais = listaDeUrls(igreja.Galeria);
+  const fotoRemovida = fotosAtuais[indice];
+
+  if (!fotoRemovida) {
     setFotoParaRemover(null);
-    if (salvo.ok) await recarregar();
-    else Alert.alert('Erro', salvo.erro || 'Não foi possível remover.');
+    return;
   }
+
+  fotosAtuais.splice(indice, 1);
+
+  const salvo = await salvarIgreja({
+    ...igreja,
+    Galeria: fotosAtuais.join(', '),
+  });
+
+  if (!salvo.ok) {
+    Alert.alert(
+      'Erro',
+      salvo.erro || 'Não foi possível remover a foto.'
+    );
+    return;
+  }
+
+  setFotoParaRemover(null);
+
+  const excluida = await excluirImagem(fotoRemovida);
+
+  await recarregar();
+
+  if (!excluida.ok) {
+    Alert.alert(
+      'Atenção',
+      'A foto foi removida da galeria, mas não foi possível excluir o arquivo do armazenamento.'
+    );
+  }
+}
 
   return (
     <View style={styles.container}>

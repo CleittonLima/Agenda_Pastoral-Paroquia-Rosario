@@ -7,7 +7,7 @@ import { useSeletorImagem } from './components/RecorteImagem';
 import { descricaoFormato } from './components/formatosImagem';
 
 export default function AdminPixScreen() {
-  const { dados, senha, recarregar } = useAdmin();
+  const { dados, recarregar } = useAdmin();
   const pix = dados.pix || {};
   const [form, setForm] = useState({});
   const [enviandoImagem, setEnviandoImagem] = useState(false);
@@ -28,12 +28,17 @@ export default function AdminPixScreen() {
 
     setEnviandoImagem(true);
     try {
-      const resposta = await enviarImagem(senha, foto.uri, foto.fileName, foto.mimeType, foto.base64);
+      const resposta = await enviarImagem(
+        foto.uri,
+        foto.fileName,
+        foto.mimeType,
+        foto.base64
+      );
       if (resposta.ok) {
         const atualizado = { ...formAtual.current, QRCode: resposta.url };
         setForm(atualizado);
         // Salva na hora — não depende de clicar em "Salvar" separadamente
-        await salvarPix(senha, atualizado);
+        await salvarPix(atualizado);
         await recarregar();
         Alert.alert('Pronto', 'QR Code enviado e salvo!');
       } else {
@@ -48,7 +53,7 @@ export default function AdminPixScreen() {
 
   async function salvar() {
     setSalvando(true);
-    const resultado = await salvarPix(senha, form);
+    const resultado = await salvarPix(form);
     setSalvando(false);
     if (resultado.ok) {
       await recarregar();

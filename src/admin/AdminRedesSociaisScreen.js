@@ -16,7 +16,7 @@ const CAMPOS = [
 ];
 
 export default function AdminRedesSociaisScreen() {
-  const { dados, senha, recarregar } = useAdmin();
+  const { dados, recarregar } = useAdmin();
   const [form, setForm] = useState({});
   const [salvando, setSalvando] = useState(false);
   const [enviandoImagem, setEnviandoImagem] = useState(false);
@@ -28,7 +28,7 @@ export default function AdminRedesSociaisScreen() {
 
   async function salvar() {
     setSalvando(true);
-    const resultado = await salvarConfiguracoes(senha, { ...dados.config, ...form });
+    const resultado = await salvarConfiguracoes({ ...dados.config, ...form });
     setSalvando(false);
     if (resultado.ok) {
       await recarregar();
@@ -44,11 +44,16 @@ export default function AdminRedesSociaisScreen() {
 
     setEnviandoImagem(true);
     try {
-      const resposta = await enviarImagem(senha, foto.uri, foto.fileName, foto.mimeType, foto.base64);
+      const resposta = await enviarImagem(
+        foto.uri,
+        foto.fileName,
+        foto.mimeType,
+        foto.base64
+      );
       if (resposta.ok) {
         const atualizado = { ...formAtual.current, RedeSocialImagem: resposta.url };
         setForm(atualizado);
-        await salvarConfiguracoes(senha, { ...dados.config, ...atualizado });
+        await salvarConfiguracoes({ ...dados.config, ...atualizado });
         await recarregar();
         Alert.alert('Pronto', 'Imagem do card enviada e salva!');
       } else {

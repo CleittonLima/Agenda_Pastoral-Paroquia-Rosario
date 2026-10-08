@@ -18,7 +18,7 @@ const COLUNAS_PDF = ['PdfLogo', 'PdfTitulo', 'PdfSubtitulo', 'PdfInfo'];
 const FONTE_SERIFADA = Platform.select({ ios: 'Georgia', android: 'serif', default: 'Georgia, serif' });
 
 export default function AdminPdfScreen() {
-  const { dados, senha, recarregar } = useAdmin();
+  const { dados, recarregar } = useAdmin();
   const config = dados.config || {};
   const [form, setForm] = useState({});
   const [salvando, setSalvando] = useState(false);
@@ -37,7 +37,7 @@ export default function AdminPdfScreen() {
   }
 
   async function salvarNaPlanilha(valores) {
-    const resultado = await salvarConfiguracoes(senha, { ...dados.config, ...valores });
+    const resultado = await salvarConfiguracoes({ ...dados.config, ...valores });
     if (resultado.ok) await recarregar();
     return resultado;
   }
@@ -47,7 +47,12 @@ export default function AdminPdfScreen() {
     if (!foto) return;
     setEnviandoLogo(true);
     try {
-      const resposta = await enviarImagem(senha, foto.uri, foto.fileName, foto.mimeType, foto.base64);
+      const resposta = await enviarImagem(
+        foto.uri,
+        foto.fileName,
+        foto.mimeType,
+        foto.base64
+      );
       if (!resposta.ok) {
         Alert.alert('Erro', resposta.erro || 'Não foi possível enviar a imagem.');
         return;

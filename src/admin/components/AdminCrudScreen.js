@@ -10,7 +10,7 @@ import CampoFormulario from './CampoFormulario';
 import ConfirmModal from './ConfirmModal';
 
 export default function AdminCrudScreen({ config }) {
-  const { dados, carregando, recarregar, senha, nomeIgrejaPorId } = useAdmin();
+  const { dados, carregando, recarregar, nomeIgrejaPorId } = useAdmin();
   const [modalAberto, setModalAberto] = useState(false);
   const [itemEditando, setItemEditando] = useState(null);
   const [valores, setValores] = useState({});
@@ -49,7 +49,7 @@ export default function AdminCrudScreen({ config }) {
   async function salvar() {
     setSalvando(true);
     const item = { ...valores, ID: itemEditando ? itemEditando.ID : '' };
-    const resultado = await config.salvar(senha, item);
+    const resultado = await config.salvar(item);
     setSalvando(false);
     if (resultado.ok) {
       setModalAberto(false);
@@ -66,7 +66,7 @@ export default function AdminCrudScreen({ config }) {
   async function executarExclusao() {
     if (!itemParaExcluir) return;
     setExcluindo(true);
-    const resultado = await config.excluir(senha, itemParaExcluir.ID);
+    const resultado = await config.excluir(itemParaExcluir.ID);
     setExcluindo(false);
     setItemParaExcluir(null);
     if (!resultado.ok) {

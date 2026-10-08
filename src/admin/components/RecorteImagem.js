@@ -18,7 +18,7 @@ import { FORMATOS_IMAGEM, PROPORCOES } from './formatosImagem';
 // Uso nas telas:
 //   const { escolherImagem, modalRecorte } = useSeletorImagem();
 //   const imagem = await escolherImagem('fotoIgreja'); // null se cancelar
-//   ...enviarImagem(senha, imagem.uri, imagem.fileName, imagem.mimeType, imagem.base64)
+// ...enviarImagem(imagem.uri, imagem.fileName, imagem.mimeType, imagem.base64)
 //   ...e renderize {modalRecorte} em algum lugar da tela.
 // ============================================================
 
