@@ -12,14 +12,16 @@ import {
 
 import { useNavigation } from '@react-navigation/native';
 import { useAdmin } from './AdminContext';
+import { useApp } from '../context/AppContext';
 
 export default function AdminLoginScreen() {
   const navigation = useNavigation();
+
   const { entrar, logado, verificandoSessao } = useAdmin();
+  const { mostrarToast } = useApp();
 
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
-  const [erro, setErro] = useState('');
   const [entrando, setEntrando] = useState(false);
 
   React.useEffect(() => {
@@ -36,31 +38,39 @@ export default function AdminLoginScreen() {
     );
   }
 
-  // resto da tela...
-
   async function fazerLogin() {
-    setErro('');
-
     if (!email.trim()) {
-      setErro('Informe o e-mail.');
+      mostrarToast('Informe o e-mail.', 'aviso');
       return;
     }
 
     if (!senha) {
-      setErro('Informe a senha.');
+      mostrarToast('Informe a senha.', 'aviso');
       return;
     }
 
     setEntrando(true);
 
-    const resultado = await entrar(email, senha);
+    try {
+      const resultado = await entrar(email, senha);
 
-    setEntrando(false);
+      if (resultado.ok) {
+        navigation.replace('AdminMenu');
+      } else {
+        mostrarToast(
+          resultado.erro || 'E-mail ou senha incorretos.',
+          'erro'
+        );
+      }
+    } catch (erro) {
+      console.error('Erro ao realizar login:', erro);
 
-    if (resultado.ok) {
-      navigation.replace('AdminMenu');
-    } else {
-      setErro(resultado.erro || 'E-mail ou senha incorretos.');
+      mostrarToast(
+        'Não foi possível realizar o login.',
+        'erro'
+      );
+    } finally {
+      setEntrando(false);
     }
   }
 
@@ -98,6 +108,7 @@ export default function AdminLoginScreen() {
           placeholder="Digite seu e-mail"
           placeholderTextColor="#a49a90"
           onSubmitEditing={fazerLogin}
+          editable={!entrando}
         />
 
         {/* SENHA */}
@@ -115,13 +126,8 @@ export default function AdminLoginScreen() {
           placeholder="Digite sua senha"
           placeholderTextColor="#a49a90"
           onSubmitEditing={fazerLogin}
+          editable={!entrando}
         />
-
-        {!!erro && (
-          <Text style={styles.erro}>
-            {erro}
-          </Text>
-        )}
 
         <TouchableOpacity
           style={styles.botao}
@@ -140,6 +146,7 @@ export default function AdminLoginScreen() {
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={{ marginTop: 14 }}
+          disabled={entrando}
         >
           <Text style={styles.linkVoltar}>
             ← Voltar para o app
@@ -209,13 +216,6 @@ const styles = StyleSheet.create({
     color: '#2b2320',
     backgroundColor: '#FAF7F2',
     width: '100%',
-  },
-
-  erro: {
-    color: '#B23A2E',
-    fontSize: 12,
-    alignSelf: 'flex-start',
-    marginTop: 8,
   },
 
   botao: {

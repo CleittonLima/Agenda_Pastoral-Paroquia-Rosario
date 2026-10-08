@@ -82,6 +82,7 @@ function TabNavigator() {
 function AppRoot() {
   const { carregando, usuario, temaCores } = useApp();
   const [primeiroAcesso, setPrimeiroAcesso] = useState(null);
+const [mostrarBoasVindas, setMostrarBoasVindas] = useState(true);
 
   useEffect(() => {
     async function verificar() {
@@ -94,8 +95,13 @@ function AppRoot() {
   let conteudo;
   if (primeiroAcesso === null || carregando) {
     conteudo = <LoadingScreen />;
-  } else if (primeiroAcesso || !usuario) {
-    conteudo = <BoasVindasScreen onConcluir={() => setPrimeiroAcesso(false)} />;
+  } else if (mostrarBoasVindas) {
+    conteudo = (
+      <BoasVindasScreen
+        primeiroAcesso={primeiroAcesso || !usuario}
+        onConcluir={() => setMostrarBoasVindas(false)}
+      />
+    );
   } else {
     conteudo = (
       <Stack.Navigator screenOptions={{ headerShown: false }}>

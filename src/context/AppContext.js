@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { buscarTudo } from '../api/api';
 import {
@@ -71,6 +72,7 @@ function mapearIgreja(linha) {
 
 function mapearHorario(linha) {
   const diaSemana = calcularDiaSemanaDeData(linha.Data);
+
   return {
     id: linha.ID,
     igrejaId: linha.Igreja,
@@ -147,8 +149,19 @@ function mapearConfiguracoes(linha) {
 // Calcula o dia da semana por extenso a partir de uma data ISO
 function calcularDiaSemanaDeData(dataISO) {
   if (!dataISO) return '';
-  const dias = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+
+  const dias = [
+    'Domingo',
+    'Segunda-feira',
+    'Terça-feira',
+    'Quarta-feira',
+    'Quinta-feira',
+    'Sexta-feira',
+    'Sábado'
+  ];
+
   const d = new Date(dataISO + 'T00:00:00');
+
   return dias[d.getDay()];
 }
 
@@ -164,21 +177,30 @@ export function AppProvider({ children }) {
   const [comErro, setComErro] = useState(false);
   const [semInternet, setSemInternet] = useState(false);
 
+  // Toast global
+  const [toast, setToast] = useState(null);
+
   // Usuário e preferências
   const [usuario, setUsuario] = useState(null);
+
   const [preferencias, setPreferencias] = useState({
     tema: 'claro',
     altoContraste: false,
     daltonismo: 'nenhum',
     reduzirAnimacoes: false,
+    escalaFonte: 1,
   });
+
   const [temaVisual, setTemaVisual] = useState('cristo');
 
-  // Paleta de cores do tema atualmente ativo (já considerando claro/escuro) —
-  // é isso que as telas devem usar para se colorir de acordo com o tema.
+  // Paleta de cores do tema atualmente ativo
+  // já considerando claro/escuro
   const temaCores = useMemo(() => {
     const tema = encontrarTema(temaVisual);
-    return preferencias.tema === 'escuro' ? tema.escuro : tema.claro;
+
+    return preferencias.tema === 'escuro'
+      ? tema.escuro
+      : tema.claro;
   }, [temaVisual, preferencias.tema]);
 
   // ---- Carregamento inicial ----
@@ -196,18 +218,25 @@ export function AppProvider({ children }) {
     // Tenta buscar dados frescos da API
     try {
       const resposta = await buscarTudo();
+
       if (resposta && resposta.ok !== false) {
         const dadosMapeados = processarDadosAPI(resposta);
+
         setDados(dadosMapeados);
         setSemInternet(false);
+
         // Salva cache para uso offline
-        await AsyncStorage.setItem(CHAVES.dadosCache, JSON.stringify(dadosMapeados));
+        await AsyncStorage.setItem(
+          CHAVES.dadosCache,
+          JSON.stringify(dadosMapeados)
+        );
       } else {
         throw new Error('API retornou erro');
       }
     } catch (erro) {
       // Sem internet ou erro na API — tenta usar cache
       const cache = await AsyncStorage.getItem(CHAVES.dadosCache);
+
       if (cache) {
         setDados(JSON.parse(cache));
         setSemInternet(true);
@@ -228,15 +257,27 @@ export function AppProvider({ children }) {
     const horarios = (resposta.horarios || [])
       .filter(h => String(h.Status || '').toLowerCase() !== 'inativo')
       .map(mapearHorario)
-      .sort((a, b) => `${a.data}${a.horario}`.localeCompare(`${b.data}${b.horario}`));
+      .sort((a, b) =>
+        `${a.data}${a.horario}`.localeCompare(
+          `${b.data}${b.horario}`
+        )
+      );
 
     const avisos = (resposta.avisos || [])
-      .filter(a => String(a.Status || '').toLowerCase() !== 'inativo' && !dataJaPassou(a.Data))
+      .filter(
+        a =>
+          String(a.Status || '').toLowerCase() !== 'inativo' &&
+          !dataJaPassou(a.Data)
+      )
       .map(mapearAviso)
       .sort((a, b) => new Date(a.data) - new Date(b.data));
 
     const eventos = (resposta.eventos || [])
-      .filter(e => String(e.Status || '').toLowerCase() !== 'inativo' && !dataJaPassou(e.Data))
+      .filter(
+        e =>
+          String(e.Status || '').toLowerCase() !== 'inativo' &&
+          !dataJaPassou(e.Data)
+      )
       .map(mapearEvento)
       .sort((a, b) => new Date(a.data) - new Date(b.data));
 
@@ -246,18 +287,40 @@ export function AppProvider({ children }) {
       avisos,
       eventos,
       pix: resposta.pix ? mapearPix(resposta.pix) : null,
-      config: resposta.config ? mapearConfiguracoes(resposta.config) : null,
+      config: resposta.config
+        ? mapearConfiguracoes(resposta.config)
+        : null,
     };
   }
 
   async function carregarPreferenciasLocais() {
     try {
       const u = await AsyncStorage.getItem(CHAVES.usuario);
-      if (u) setUsuario(JSON.parse(u));
+
+      if (u) {
+        setUsuario(JSON.parse(u));
+      }
+
       const p = await AsyncStorage.getItem(CHAVES.preferencias);
-      if (p) setPreferencias(JSON.parse(p));
+
+      if (p) {
+        const preferenciasSalvas = JSON.parse(p);
+
+        setPreferencias({
+          tema: 'claro',
+          altoContraste: false,
+          daltonismo: 'nenhum',
+          reduzirAnimacoes: false,
+          escalaFonte: 1,
+          ...preferenciasSalvas,
+        });
+      }
+
       const t = await AsyncStorage.getItem(CHAVES.temaVisual);
-      if (t) setTemaVisual(t);
+
+      if (t) {
+        setTemaVisual(t);
+      }
     } catch (_) {}
   }
 
@@ -267,17 +330,27 @@ export function AppProvider({ children }) {
       ...h,
       data: proximaOcorrenciaDiaSemana(h.diaSemana),
     }));
-    if (igrejaId) return lista.filter(h => h.igrejaId === igrejaId);
+
+    if (igrejaId) {
+      return lista.filter(h => h.igrejaId === igrejaId);
+    }
+
     return lista;
   }
 
   function listarAvisos(igrejaId = null) {
-    if (igrejaId) return dados.avisos.filter(a => a.igrejaId === igrejaId);
+    if (igrejaId) {
+      return dados.avisos.filter(a => a.igrejaId === igrejaId);
+    }
+
     return dados.avisos;
   }
 
   function listarEventos(igrejaId = null) {
-    if (igrejaId) return dados.eventos.filter(e => e.igrejaId === igrejaId);
+    if (igrejaId) {
+      return dados.eventos.filter(e => e.igrejaId === igrejaId);
+    }
+
     return dados.eventos;
   }
 
@@ -287,70 +360,251 @@ export function AppProvider({ children }) {
 
   function nomeIgreja(id) {
     const i = obterIgreja(id);
+
     return i ? i.nome : '';
   }
 
   function corIgreja(id) {
     const i = obterIgreja(id);
+
     return i ? i.cor : '#7A1F2B';
   }
+
+  // ---- Toast global ----
+  const mostrarToast = useCallback(
+    (mensagem, tipo = 'sucesso', duracao = 2500) => {
+      setToast({
+        mensagem,
+        tipo,
+      });
+
+      if (mostrarToast._timer) {
+        clearTimeout(mostrarToast._timer);
+      }
+
+      mostrarToast._timer = setTimeout(() => {
+        setToast(null);
+      }, duracao);
+    },
+    []
+  );
 
   // ---- Usuário ----
   async function salvarUsuario(dados) {
     setUsuario(dados);
-    await AsyncStorage.setItem(CHAVES.usuario, JSON.stringify(dados));
+
+    await AsyncStorage.setItem(
+      CHAVES.usuario,
+      JSON.stringify(dados)
+    );
   }
 
   async function salvarPreferencias(prefs) {
     setPreferencias(prefs);
-    await AsyncStorage.setItem(CHAVES.preferencias, JSON.stringify(prefs));
+
+    await AsyncStorage.setItem(
+      CHAVES.preferencias,
+      JSON.stringify(prefs)
+    );
   }
 
   async function salvarTemaVisual(tema) {
     setTemaVisual(tema);
-    await AsyncStorage.setItem(CHAVES.temaVisual, tema);
+
+    await AsyncStorage.setItem(
+      CHAVES.temaVisual,
+      tema
+    );
   }
 
   // Toca no tema: se já é o tema ativo, alterna entre claro/escuro;
   // se é outro tema, seleciona ele (sempre começando no modo claro)
   async function selecionarTemaVisual(temaId) {
     if (temaVisual === temaId) {
-      const novoModo = preferencias.tema === 'escuro' ? 'claro' : 'escuro';
-      await salvarPreferencias({ ...preferencias, tema: novoModo });
+      const novoModo =
+        preferencias.tema === 'escuro'
+          ? 'claro'
+          : 'escuro';
+
+      await salvarPreferencias({
+        ...preferencias,
+        tema: novoModo,
+      });
     } else {
       await salvarTemaVisual(temaId);
+
       if (preferencias.tema !== 'claro') {
-        await salvarPreferencias({ ...preferencias, tema: 'claro' });
+        await salvarPreferencias({
+          ...preferencias,
+          tema: 'claro',
+        });
       }
     }
   }
 
   async function limparDadosLocais() {
-    await AsyncStorage.multiRemove([CHAVES.usuario, CHAVES.preferencias, CHAVES.temaVisual]);
+    await AsyncStorage.multiRemove([
+      CHAVES.usuario,
+      CHAVES.preferencias,
+      CHAVES.temaVisual,
+    ]);
+
     setUsuario(null);
-    setPreferencias({ tema: 'claro', altoContraste: false, daltonismo: 'nenhum', reduzirAnimacoes: false });
+
+    setPreferencias({
+      tema: 'claro',
+      altoContraste: false,
+      daltonismo: 'nenhum',
+      reduzirAnimacoes: false,
+      escalaFonte: 1,
+    });
+
     setTemaVisual('cristo');
   }
 
+  function tamanhoFonte(tamanhoBase) {
+    const escala = Number(preferencias.escalaFonte) || 1;
+
+    return Math.round(tamanhoBase * escala);
+  }
+
   return (
-    <AppContext.Provider value={{
-      // Estado
-      dados, carregando, comErro, semInternet,
-      usuario, preferencias, temaVisual, temaCores,
-      // Ações
-      recarregar: carregarTudo,
-      salvarUsuario, salvarPreferencias, salvarTemaVisual, selecionarTemaVisual, limparDadosLocais,
-      // Helpers
-      listarHorarios, listarAvisos, listarEventos,
-      obterIgreja, nomeIgreja, corIgreja, valorValido,
-    }}>
+    <AppContext.Provider
+      value={{
+        tamanhoFonte,
+
+        // Estado
+        dados,
+        carregando,
+        comErro,
+        semInternet,
+        usuario,
+        preferencias,
+        temaVisual,
+        temaCores,
+
+        // Toast
+        toast,
+
+        // Ações
+        recarregar: carregarTudo,
+        mostrarToast,
+        salvarUsuario,
+        salvarPreferencias,
+        salvarTemaVisual,
+        selecionarTemaVisual,
+        limparDadosLocais,
+
+        // Helpers
+        listarHorarios,
+        listarAvisos,
+        listarEventos,
+        obterIgreja,
+        nomeIgreja,
+        corIgreja,
+        valorValido,
+      }}
+    >
       {children}
+
+      {toast && (
+        <View
+          pointerEvents="none"
+          style={toastStyles.overlay}
+        >
+          <View
+            style={[
+              toastStyles.caixa,
+              toast.tipo === 'erro'
+                ? toastStyles.erro
+                : toast.tipo === 'aviso'
+                  ? toastStyles.aviso
+                  : toastStyles.sucesso,
+            ]}
+          >
+            <Text style={toastStyles.icone}>
+              {toast.tipo === 'erro'
+                ? '✕'
+                : toast.tipo === 'aviso'
+                  ? '!'
+                  : '✓'}
+            </Text>
+
+            <Text style={toastStyles.texto}>
+              {toast.mensagem}
+            </Text>
+          </View>
+        </View>
+      )}
     </AppContext.Provider>
   );
 }
 
+const toastStyles = StyleSheet.create({
+  overlay: {
+    position: 'absolute',
+    top: 54,
+    left: 16,
+    right: 16,
+    alignItems: 'center',
+    zIndex: 9999,
+    elevation: 9999,
+  },
+
+  caixa: {
+    minHeight: 46,
+    maxWidth: 520,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    elevation: 5,
+  },
+
+  sucesso: {
+    backgroundColor: '#2E7D32',
+  },
+
+  aviso: {
+    backgroundColor: '#B26A00',
+  },
+
+  erro: {
+    backgroundColor: '#B3261E',
+  },
+
+  icone: {
+    width: 24,
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#fff',
+    textAlign: 'center',
+    marginRight: 8,
+  },
+
+  texto: {
+    flex: 1,
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+    lineHeight: 19,
+  },
+});
+
 export function useApp() {
   const ctx = useContext(AppContext);
-  if (!ctx) throw new Error('useApp deve ser usado dentro de AppProvider');
+
+  if (!ctx) {
+    throw new Error('useApp deve ser usado dentro de AppProvider');
+  }
+
   return ctx;
 }

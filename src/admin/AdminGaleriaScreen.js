@@ -1,29 +1,54 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  ActivityIndicator,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAdmin } from './AdminContext';
-import { salvarIgreja, enviarImagem, excluirImagem } from '../api/api';
+import {
+  salvarIgreja,
+  enviarImagem,
+  excluirImagem,
+} from '../api/api';
 import AdminHeader from './components/AdminHeader';
 import ConfirmModal from './components/ConfirmModal';
 import { useSeletorImagem } from './components/RecorteImagem';
 import { urlImagemOtimizada } from '../utils/imagens';
+import { useApp } from '../context/AppContext';
 
 function listaDeUrls(texto) {
-  return String(texto || '').split(',').map(s => s.trim()).filter(Boolean);
+  return String(texto || '')
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
 }
 
 export default function AdminGaleriaScreen() {
   const { dados, recarregar } = useAdmin();
+  const { mostrarToast } = useApp();
+
   const [enviandoId, setEnviandoId] = useState(null);
-  const [fotoParaRemover, setFotoParaRemover] = useState(null); // { igreja, indice }
-  const { escolherImagem, modalRecorte } = useSeletorImagem();
+  const [fotoParaRemover, setFotoParaRemover] = useState(null);
+
+  const {
+    escolherImagem,
+    modalRecorte,
+  } = useSeletorImagem();
 
   async function adicionarFoto(igreja) {
-    // Galeria: recorte livre ou proporções prontas (4:3, 3:4, 1:1, 16:9)
+    // Galeria: recorte livre ou proporções prontas
+    // (4:3, 3:4, 1:1, 16:9)
     const foto = await escolherImagem('galeria');
+
     if (!foto) return;
 
     setEnviandoId(igreja.ID);
+
     try {
       const resposta = await enviarImagem(
         foto.uri,
@@ -31,102 +56,217 @@ export default function AdminGaleriaScreen() {
         foto.mimeType,
         foto.base64
       );
+
       if (!resposta.ok) {
-        Alert.alert('Erro', resposta.erro || 'Falha ao enviar.');
+        mostrarToast(
+          resposta.erro || 'Falha ao enviar a foto.',
+          'erro'
+        );
+
         return;
       }
-      const fotosAtuais = listaDeUrls(igreja.Galeria);
-      fotosAtuais.push(resposta.url);
-      const salvo = await salvarIgreja(
-        { ...igreja, Galeria: fotosAtuais.join(', ') }
+
+      const fotosAtuais = listaDeUrls(
+        igreja.Galeria
       );
-      if (salvo.ok) await recarregar();
-      else Alert.alert('Erro', salvo.erro || 'Não foi possível salvar.');
+
+      fotosAtuais.push(resposta.url);
+
+      const salvo = await salvarIgreja({
+        ...igreja,
+        Galeria: fotosAtuais.join(', '),
+      });
+
+      if (!salvo.ok) {
+        mostrarToast(
+          salvo.erro ||
+            'Não foi possível salvar a galeria.',
+          'erro'
+        );
+
+        return;
+      }
+
+      await recarregar();
+
+      mostrarToast('Foto adicionada com sucesso!');
     } catch (e) {
-      Alert.alert('Erro', 'Falha ao enviar a foto. Verifique sua internet.');
+      console.error(
+        'Erro ao adicionar foto:',
+        e
+      );
+
+      mostrarToast(
+        'Falha ao enviar a foto. Verifique sua internet.',
+        'erro'
+      );
     } finally {
       setEnviandoId(null);
     }
   }
 
   function removerFoto(igreja, indice) {
-    setFotoParaRemover({ igreja, indice });
+    setFotoParaRemover({
+      igreja,
+      indice,
+    });
   }
 
   async function executarRemocao() {
-  if (!fotoParaRemover) return;
+    if (!fotoParaRemover) return;
 
-  const { igreja, indice } = fotoParaRemover;
-  const fotosAtuais = listaDeUrls(igreja.Galeria);
-  const fotoRemovida = fotosAtuais[indice];
+    const {
+      igreja,
+      indice,
+    } = fotoParaRemover;
 
-  if (!fotoRemovida) {
+    const fotosAtuais = listaDeUrls(
+      igreja.Galeria
+    );
+
+    const fotoRemovida = fotosAtuais[indice];
+
+    if (!fotoRemovida) {
+      setFotoParaRemover(null);
+
+      mostrarToast(
+        'A foto não foi encontrada.',
+        'aviso'
+      );
+
+      return;
+    }
+
+    fotosAtuais.splice(indice, 1);
+
+    const salvo = await salvarIgreja({
+      ...igreja,
+      Galeria: fotosAtuais.join(', '),
+    });
+
+    if (!salvo.ok) {
+      mostrarToast(
+        salvo.erro ||
+          'Não foi possível remover a foto.',
+        'erro'
+      );
+
+      return;
+    }
+
     setFotoParaRemover(null);
-    return;
-  }
 
-  fotosAtuais.splice(indice, 1);
-
-  const salvo = await salvarIgreja({
-    ...igreja,
-    Galeria: fotosAtuais.join(', '),
-  });
-
-  if (!salvo.ok) {
-    Alert.alert(
-      'Erro',
-      salvo.erro || 'Não foi possível remover a foto.'
+    const excluida = await excluirImagem(
+      fotoRemovida
     );
-    return;
+
+    await recarregar();
+
+    if (!excluida.ok) {
+      mostrarToast(
+        'A foto foi removida da galeria, mas não foi possível excluir o arquivo do armazenamento.',
+        'aviso',
+        4000
+      );
+
+      return;
+    }
+
+    mostrarToast('Foto removida com sucesso!');
   }
-
-  setFotoParaRemover(null);
-
-  const excluida = await excluirImagem(fotoRemovida);
-
-  await recarregar();
-
-  if (!excluida.ok) {
-    Alert.alert(
-      'Atenção',
-      'A foto foi removida da galeria, mas não foi possível excluir o arquivo do armazenamento.'
-    );
-  }
-}
 
   return (
     <View style={styles.container}>
       <AdminHeader titulo="Galeria de Fotos" />
-      <ScrollView contentContainerStyle={styles.scroll}>
+
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+      >
         <Text style={styles.dica}>
-          As fotos aparecem no carrossel da igreja (Igrejas → toque na igreja). Ao adicionar, você pode
-          recortar livremente ou usar uma proporção pronta.
+          As fotos aparecem no carrossel da igreja
+          (Igrejas → toque na igreja). Ao adicionar,
+          você pode recortar livremente ou usar uma
+          proporção pronta.
         </Text>
+
         {dados.igrejas.map(igreja => {
-          const fotos = listaDeUrls(igreja.Galeria);
+          const fotos = listaDeUrls(
+            igreja.Galeria
+          );
+
           return (
-            <View key={igreja.ID} style={styles.grupo}>
-              <Text style={styles.grupoTitulo}>{igreja.Nome}</Text>
+            <View
+              key={igreja.ID}
+              style={styles.grupo}
+            >
+              <Text
+                style={styles.grupoTitulo}
+              >
+                {igreja.Nome}
+              </Text>
+
               <TouchableOpacity
                 style={styles.botaoAdicionar}
-                onPress={() => adicionarFoto(igreja)}
-                disabled={enviandoId === igreja.ID}
+                onPress={() =>
+                  adicionarFoto(igreja)
+                }
+                disabled={
+                  enviandoId === igreja.ID
+                }
               >
                 {enviandoId === igreja.ID ? (
-                  <ActivityIndicator color="#7A1F2B" />
+                  <ActivityIndicator
+                    color="#7A1F2B"
+                  />
                 ) : (
                   <>
-                    <Ionicons name="add" size={16} color="#7A1F2B" />
-                    <Text style={styles.botaoAdicionarTexto}>Adicionar foto</Text>
+                    <Ionicons
+                      name="add"
+                      size={16}
+                      color="#7A1F2B"
+                    />
+
+                    <Text
+                      style={
+                        styles.botaoAdicionarTexto
+                      }
+                    >
+                      Adicionar foto
+                    </Text>
                   </>
                 )}
               </TouchableOpacity>
+
               <View style={styles.grade}>
                 {fotos.map((url, i) => (
-                  <View key={i} style={styles.fotoItem}>
-                    <Image source={{ uri: urlImagemOtimizada(url, 300) }} style={styles.foto} />
-                    <TouchableOpacity style={styles.botaoRemover} onPress={() => removerFoto(igreja, i)}>
-                      <Ionicons name="close" size={14} color="#fff" />
+                  <View
+                    key={i}
+                    style={styles.fotoItem}
+                  >
+                    <Image
+                      source={{
+                        uri: urlImagemOtimizada(
+                          url,
+                          300
+                        ),
+                      }}
+                      style={styles.foto}
+                    />
+
+                    <TouchableOpacity
+                      style={styles.botaoRemover}
+                      onPress={() =>
+                        removerFoto(
+                          igreja,
+                          i
+                        )
+                      }
+                    >
+                      <Ionicons
+                        name="close"
+                        size={14}
+                        color="#fff"
+                      />
                     </TouchableOpacity>
                   </View>
                 ))}
@@ -142,32 +282,100 @@ export default function AdminGaleriaScreen() {
         mensagem="Tem certeza que deseja remover esta foto?"
         textoConfirmar="Remover"
         onConfirmar={executarRemocao}
-        onCancelar={() => setFotoParaRemover(null)}
+        onCancelar={() =>
+          setFotoParaRemover(null)
+        }
       />
+
       {modalRecorte}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FAF7F2' },
-  scroll: { padding: 16, paddingBottom: 32 },
-  dica: { fontSize: 12, color: '#8a7d6f', marginBottom: 14, lineHeight: 17 },
+  container: {
+    flex: 1,
+    backgroundColor: '#FAF7F2',
+  },
+
+  scroll: {
+    padding: 16,
+    paddingBottom: 32,
+  },
+
+  dica: {
+    fontSize: 12,
+    color: '#8a7d6f',
+    marginBottom: 14,
+    lineHeight: 17,
+  },
+
   grupo: {
-    backgroundColor: '#fff', borderRadius: 14, padding: 14, marginBottom: 16,
-    shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 4, elevation: 1,
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
   },
-  grupoTitulo: { fontSize: 15, fontWeight: '700', color: '#2b2320', marginBottom: 10 },
+
+  grupoTitulo: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#2b2320',
+    marginBottom: 10,
+  },
+
   botaoAdicionar: {
-    flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start',
-    borderWidth: 1, borderColor: '#7A1F2B', borderRadius: 999, paddingVertical: 7, paddingHorizontal: 12, marginBottom: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: '#7A1F2B',
+    borderRadius: 999,
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    marginBottom: 10,
   },
-  botaoAdicionarTexto: { color: '#7A1F2B', fontWeight: '700', fontSize: 12 },
-  grade: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  fotoItem: { width: 80, height: 80, borderRadius: 10, overflow: 'hidden', position: 'relative' },
-  foto: { width: '100%', height: '100%' },
+
+  botaoAdicionarTexto: {
+    color: '#7A1F2B',
+    fontWeight: '700',
+    fontSize: 12,
+  },
+
+  grade: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+
+  fotoItem: {
+    width: 80,
+    height: 80,
+    borderRadius: 10,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+
+  foto: {
+    width: '100%',
+    height: '100%',
+  },
+
   botaoRemover: {
-    position: 'absolute', top: 3, right: 3, width: 20, height: 20, borderRadius: 10,
-    backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center',
+    position: 'absolute',
+    top: 3,
+    right: 3,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor:
+      'rgba(0,0,0,0.6)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
