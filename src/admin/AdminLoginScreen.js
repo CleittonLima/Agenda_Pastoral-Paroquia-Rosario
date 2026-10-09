@@ -17,7 +17,12 @@ import { useApp } from '../context/AppContext';
 export default function AdminLoginScreen() {
   const navigation = useNavigation();
 
-  const { entrar, logado, verificandoSessao } = useAdmin();
+  const {
+    entrar,
+    logado,
+    verificandoSessao,
+  } = useAdmin();
+
   const { mostrarToast } = useApp();
 
   const [email, setEmail] = useState('');
@@ -28,7 +33,7 @@ export default function AdminLoginScreen() {
     if (!verificandoSessao && logado) {
       navigation.replace('AdminMenu');
     }
-  }, [verificandoSessao, logado]);
+  }, [verificandoSessao, logado, navigation]);
 
   if (verificandoSessao) {
     return (
@@ -52,7 +57,7 @@ export default function AdminLoginScreen() {
     setEntrando(true);
 
     try {
-      const resultado = await entrar(email, senha);
+      const resultado = await entrar(email.trim(), senha);
 
       if (resultado.ok) {
         navigation.replace('AdminMenu');
@@ -80,7 +85,6 @@ export default function AdminLoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={styles.card}>
-
         <View style={styles.emblema}>
           <Text style={{ fontSize: 26 }}>⛪</Text>
         </View>
@@ -130,7 +134,10 @@ export default function AdminLoginScreen() {
         />
 
         <TouchableOpacity
-          style={styles.botao}
+          style={[
+            styles.botao,
+            entrando && styles.botaoDesabilitado,
+          ]}
           onPress={fazerLogin}
           disabled={entrando}
         >
@@ -152,7 +159,6 @@ export default function AdminLoginScreen() {
             ← Voltar para o app
           </Text>
         </TouchableOpacity>
-
       </View>
     </KeyboardAvoidingView>
   );
@@ -225,6 +231,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     marginTop: 18,
+  },
+
+  botaoDesabilitado: {
+    opacity: 0.7,
   },
 
   botaoTexto: {

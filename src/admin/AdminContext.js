@@ -44,24 +44,33 @@ export function AdminProvider({ children }) {
       .maybeSingle();
 
     if (error) {
-      console.error('Erro ao buscar perfil administrativo:', error);
+      console.error(
+        'Erro ao buscar perfil administrativo:',
+        error
+      );
+
       setPerfil(null);
       return null;
     }
 
     if (!data) {
-      console.error('Usuário autenticado não possui perfil administrativo.');
+      console.error(
+        'Usuário autenticado não possui perfil administrativo.'
+      );
+
       setPerfil(null);
       return null;
     }
 
     if (!data.ativo) {
       console.error('Usuário administrativo está inativo.');
+
       setPerfil(null);
       return null;
     }
 
     setPerfil(data);
+
     return data;
   }
 
@@ -72,8 +81,6 @@ export function AdminProvider({ children }) {
     setCarregando(true);
 
     try {
-      // Temporariamente usamos buscarTudo().
-      // Depois vamos criar buscarTudoAdmin() com autenticação.
       const resposta = await buscarTudoAdmin();
 
       if (resposta && resposta.ok !== false) {
@@ -86,8 +93,11 @@ export function AdminProvider({ children }) {
           config: resposta.config || {},
         });
       }
-    } catch (e) {
-      console.error('Erro ao carregar dados administrativos:', e);
+    } catch (erro) {
+      console.error(
+        'Erro ao carregar dados administrativos:',
+        erro
+      );
     } finally {
       setCarregando(false);
     }
@@ -108,17 +118,23 @@ export function AdminProvider({ children }) {
         if (!montado) return;
 
         if (session?.user) {
-          const perfilEncontrado = await carregarPerfil(session.user);
+          const perfilEncontrado = await carregarPerfil(
+            session.user
+          );
 
           if (perfilEncontrado) {
             setUsuario(session.user);
+
             await carregarDados();
           } else {
             await supabase.auth.signOut();
           }
         }
       } catch (erro) {
-        console.error('Erro ao verificar sessão:', erro);
+        console.error(
+          'Erro ao verificar sessão:',
+          erro
+        );
       } finally {
         if (montado) {
           setVerificandoSessao(false);
@@ -138,10 +154,11 @@ export function AdminProvider({ children }) {
   // ==========================================================
   async function entrar(email, senhaDigitada) {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: String(email || '').trim(),
-        password: senhaDigitada,
-      });
+      const { data, error } =
+        await supabase.auth.signInWithPassword({
+          email: String(email || '').trim(),
+          password: senhaDigitada,
+        });
 
       if (error) {
         console.error('Erro no login:', error);
@@ -159,14 +176,17 @@ export function AdminProvider({ children }) {
         };
       }
 
-      const perfilEncontrado = await carregarPerfil(data.user);
+      const perfilEncontrado = await carregarPerfil(
+        data.user
+      );
 
       if (!perfilEncontrado) {
         await supabase.auth.signOut();
 
         return {
           ok: false,
-          erro: 'Este usuário não possui acesso ao painel administrativo.',
+          erro:
+            'Este usuário não possui acesso ao painel administrativo.',
         };
       }
 
@@ -176,9 +196,13 @@ export function AdminProvider({ children }) {
 
       return {
         ok: true,
+        perfil: perfilEncontrado,
       };
     } catch (erro) {
-      console.error('Erro inesperado no login:', erro);
+      console.error(
+        'Erro inesperado no login:',
+        erro
+      );
 
       return {
         ok: false,
@@ -191,19 +215,33 @@ export function AdminProvider({ children }) {
   // SAIR
   // ==========================================================
   async function sair() {
-    await supabase.auth.signOut();
+    try {
+      const { error } = await supabase.auth.signOut();
 
-    setUsuario(null);
-    setPerfil(null);
-    setDados(DADOS_VAZIOS);
+      if (error) {
+        console.error('Erro ao sair da conta:', error);
+      }
+    } catch (erro) {
+      console.error(
+        'Erro inesperado ao sair da conta:',
+        erro
+      );
+    } finally {
+      setUsuario(null);
+      setPerfil(null);
+      setDados(DADOS_VAZIOS);
+    }
   }
 
   // ==========================================================
   // NOME DA IGREJA PELO ID
   // ==========================================================
   function nomeIgrejaPorId(id) {
-    const i = dados.igrejas.find(x => x.ID === id);
-    return i ? i.Nome : '—';
+    const igreja = dados.igrejas.find(
+      item => item.ID === id
+    );
+
+    return igreja ? igreja.Nome : '—';
   }
 
   // ==========================================================
@@ -224,7 +262,7 @@ export function AdminProvider({ children }) {
 
         // Mantido temporariamente para compatibilidade
         // com as telas administrativas antigas.
-        // NÃO contém a senha do usuário.
+        // Não contém a senha do usuário.
         senha: null,
 
         logado: !!usuario && !!perfil,
@@ -250,7 +288,9 @@ export function useAdmin() {
   const ctx = useContext(AdminContext);
 
   if (!ctx) {
-    throw new Error('useAdmin deve ser usado dentro de AdminProvider');
+    throw new Error(
+      'useAdmin deve ser usado dentro de AdminProvider'
+    );
   }
 
   return ctx;

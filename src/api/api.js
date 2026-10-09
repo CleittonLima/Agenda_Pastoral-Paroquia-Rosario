@@ -981,3 +981,55 @@ export async function excluirImagem(url) {
     };
   }
 }
+
+// ==========================================================
+// GERENCIAMENTO DE USUÁRIOS ADMINISTRATIVOS
+// ==========================================================
+
+export async function gerenciarUsuarios(acao, dados = {}) {
+  try {
+    const { data, error } = await supabase.functions.invoke(
+      'gerenciar-usuarios',
+      {
+        body: {
+          acao,
+          ...dados,
+        },
+      }
+    );
+
+    if (error) {
+      console.error(
+        'Erro ao chamar gerenciar-usuarios:',
+        error
+      );
+
+      return {
+        ok: false,
+        erro: error.message || 'Não foi possível executar a operação.',
+      };
+    }
+
+    if (data?.erro) {
+      return {
+        ok: false,
+        erro: data.erro,
+      };
+    }
+
+    return {
+      ok: true,
+      ...data,
+    };
+  } catch (erro) {
+    console.error(
+      'Erro inesperado no gerenciamento de usuários:',
+      erro
+    );
+
+    return {
+      ok: false,
+      erro: 'Não foi possível se comunicar com o servidor.',
+    };
+  }
+}
