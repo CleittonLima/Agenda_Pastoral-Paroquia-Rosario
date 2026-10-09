@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ORACOES, TERCOS, MISTERIOS, MISTERIO_POR_DIA } from '../data/oracoes';
 import { diaSemanaHoje } from '../utils/datas';
 import { useApp } from '../context/AppContext';
+import { buscarOracoesETercos } from '../api/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const TEXTO_PAI_NOSSO = 'Pai nosso que estais nos céus,\nsantificado seja o vosso nome;\nvenha a nós o vosso reino;\nseja feita a vossa vontade,\nassim na terra como no céu.\n\nO pão nosso de cada dia nos dai hoje;\nperdoai-nos as nossas ofensas,\nassim como nós perdoamos a quem nos tem ofendido;\ne não nos deixeis cair em tentação,\nmas livrai-nos do mal. Amém.';
@@ -16,26 +17,34 @@ const TEXTO_AVE_MARIA = 'Ave Maria, cheia de graça,\no Senhor é convosco.\nBen
 
 const TEXTO_GLORIA = 'Glória ao Pai,\nao Filho\ne ao Espírito Santo.\n\nComo era no princípio,\nagora e sempre,\npor todos os séculos dos séculos. Amém.';
 
-// Expande o bloco {tipo:"misterios"} nas partes do terço, inserindo
-// automaticamente as 5 dezenas do mistério do dia (mesma lógica do site).
+// Expande o bloco { tipo: "misterios" } nas partes do terço,
+// inserindo automaticamente os 5 mistérios do dia e cada oração
+// individualmente.
 function montarPartesTerco(terco) {
   const partes = [];
   const chaveMisterio = MISTERIO_POR_DIA[diaSemanaHoje()];
   const grupo = MISTERIOS[chaveMisterio];
 
   for (const parte of terco.partes) {
+    // Partes normais são mantidas como estão.
     if (parte.tipo !== 'misterios') {
       partes.push(parte);
       continue;
     }
 
+    // Percorre os cinco mistérios do dia.
     grupo.lista.forEach((misterio, idx) => {
-      const nome = typeof misterio === 'string' ? misterio : misterio.nome;
+      const nome =
+        typeof misterio === 'string'
+          ? misterio
+          : misterio.nome;
 
-      const reflexao = (typeof misterio === 'object' && misterio.reflexao)
-        ? misterio.reflexao
-        : 'Anuncie este mistério e faça uma breve reflexão. ✝️';
+      const reflexao =
+        typeof misterio === 'object' && misterio.reflexao
+          ? misterio.reflexao
+          : 'Anuncie este mistério e faça uma breve reflexão. ✝️';
 
+      // 1. Apresentação do mistério e sua reflexão.
       partes.push({
         tipo: 'oracao',
         titulo: `${idx + 1}º Mistério — ${nome}`,
@@ -43,22 +52,35 @@ function montarPartesTerco(terco) {
         texto: reflexao,
       });
 
+      // 2. Pai-Nosso.
       partes.push({
         tipo: 'oracao',
         titulo: 'Pai-Nosso',
+        subtitulo: `${idx + 1}ª dezena`,
         texto: TEXTO_PAI_NOSSO,
       });
 
-      partes.push({
-        tipo: 'oracao',
-        titulo: 'Dez Ave-Marias',
-        texto: TEXTO_AVE_MARIA,
-      });
+      // 3. Dez Ave-Marias, cada uma em uma etapa.
+      for (let repeticao = 1; repeticao <= 10; repeticao++) {
+        partes.push({
+          tipo: 'oracao',
+          titulo: `Ave-Maria — ${repeticao} de 10`,
+          subtitulo: `${idx + 1}ª dezena · ${grupo.nome}`,
+          texto: TEXTO_AVE_MARIA,
+        });
+      }
 
+      // 4. Glória ao Pai.
       partes.push({
         tipo: 'oracao',
         titulo: 'Glória ao Pai',
+        subtitulo: `${idx + 1}ª dezena`,
         texto: TEXTO_GLORIA,
+      });
+            partes.push({
+        tipo: 'oracao',
+        titulo: 'Jaculatória (Ó meu Jesus)',
+        texto: 'Ó meu Jesus, perdoai-nos, livrai-nos do fogo do inferno, levai as almas todas para o céu e socorrei principalmente aquelas que mais precisarem da vossa infinita misericórdia.',
       });
     });
   }
@@ -86,21 +108,56 @@ export default function OracoesScreen() {
   const [tercoAtivo, setTercoAtivo] = useState(null);
   const [concluido, setConcluido] = useState(false);
 
+  // Conteúdos adicionais carregados do Supabase.
+  const [oracoesSupabase, setOracoesSupabase] = useState([]);
+  const [tercosSupabase, setTercosSupabase] = useState([]);
+
+  // Carrega as orações e os terços adicionais do Supabase.
+useEffect(() => {
+  let ativo = true;
+
+  async function carregarConteudos() {
+    const resultado = await buscarOracoesETercos();
+
+    if (!ativo || !resultado.ok) {
+      return;
+    }
+
+    setOracoesSupabase(resultado.oracoes || []);
+    setTercosSupabase(resultado.tercos || []);
+  }
+
+  carregarConteudos();
+
+  return () => {
+    ativo = false;
+  };
+}, []);
+
   // Progresso salvo encontrado ao tentar iniciar um Terço.
   const [progressoPendente, setProgressoPendente] = useState(null);
 
   // Evita múltiplos toques enquanto verifica o progresso salvo.
   const [abrindoTerco, setAbrindoTerco] = useState(false);
 
-  const tercosAtivos = useMemo(
-    () => (Array.isArray(TERCOS)
-      ? TERCOS.filter(t => t.status === 'ativo')
-      : []),
-    []
+  const tercosAtivos = useMemo(() => {
+  const tercosFixos = Array.isArray(TERCOS)
+    ? TERCOS.filter(t => t.status === 'ativo')
+    : [];
+
+  const tercosAdicionais = tercosSupabase.filter(
+    t => String(t.status).toLowerCase() === 'ativo'
   );
 
+  return [...tercosFixos, ...tercosAdicionais];
+}, [tercosSupabase]);
+
   const misteriosSeguro = MISTERIOS || {};
-  const oracoesSeguro = Array.isArray(ORACOES) ? ORACOES : [];
+
+  const oracoesSeguro = [
+    ...(Array.isArray(ORACOES) ? ORACOES : []),
+    ...oracoesSupabase,
+  ];
 
   const tercoSelecionado =
     tercosAtivos[indiceCarrossel] || tercosAtivos[0];
@@ -184,7 +241,7 @@ export default function OracoesScreen() {
     }
   }
 
-  async function limparProgressoTerco(terco) {
+  async function limparProgressoTerco(terco) {  
     try {
       await AsyncStorage.removeItem(
         chaveProgressoTerco(terco)

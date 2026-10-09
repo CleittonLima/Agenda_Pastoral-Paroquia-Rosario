@@ -229,7 +229,7 @@ export const TERCOS = [
     ],
   },
 
-  /* ---- TERÇO DA DIVINA MISERICÓRDIA ---- */
+    /* ---- TERÇO DA DIVINA MISERICÓRDIA ---- */
   {
     id: 'misericordia',
     nome: 'Terço da Divina Misericórdia',
@@ -237,31 +237,68 @@ export const TERCOS = [
     status: 'ativo',
     imagem: '',
     conclusao: 'Ó Sangue e Água que jorrastes do Coração de Jesus como uma Fonte de Misericórdia para nós, eu confio em Vós! 🕊️',
+
     partes: [
-      { tipo: 'oracao', titulo: 'Sinal da Cruz', texto: 'Em nome do Pai, do Filho e do Espírito Santo. Amém.' },
+      // PREPARAÇÃO
+
+      {
+        tipo: 'oracao',
+        titulo: 'Sinal da Cruz',
+        texto: 'Em nome do Pai, do Filho e do Espírito Santo. Amém.',
+      },
+
       {
         tipo: 'oracao',
         titulo: 'Oração inicial',
-        texto: 'Ó Deus Eterno, em quem a misericórdia é infinita e o tesouro de compaixão inesgotável, olhai para nós benevolentemente e aumentai em nós a vossa misericórdia para que, nos momentos difíceis, não caiamos em desespero, mas com grande confiança nos submetamos à vossa santa vontade, que é o amor e a misericórdia. Amém.',
+        texto: 'Ó Jesus, Vós expirastes, mas a fonte da vida jorrou para as almas e abriu-se o oceano da misericórdia para o mundo inteiro. Ó Fonte da Vida, insondável Misericórdia Divina, envolvei o mundo todo e derramai-Vos sobre nós.',
       },
+
       {
         tipo: 'oracao',
-        titulo: 'Nas contas grandes — Pai-Nosso',
-        subtitulo: '(Reze um Pai-Nosso, Ave-Maria e Creio em Deus)',
+        titulo: 'Pai-Nosso',
         texto: 'Pai nosso que estais nos céus,\nsantificado seja o vosso nome;\nvenha a nós o vosso reino;\nseja feita a vossa vontade,\nassim na terra como no céu.\n\nO pão nosso de cada dia nos dai hoje;\nperdoai-nos as nossas ofensas,\nassim como nós perdoamos a quem nos tem ofendido;\ne não nos deixeis cair em tentação,\nmas livrai-nos do mal. Amém.',
       },
+
       {
         tipo: 'oracao',
-        titulo: 'Nas contas pequenas (repita 10 vezes em cada dezena)',
-        subtitulo: '5 dezenas ao todo',
-        texto: 'Eterno Pai,\noferecemos-te o Corpo e o Sangue, a Alma e a Divindade\nde teu amado Filho, Nosso Senhor Jesus Cristo,\nem expiação dos nossos pecados e dos do mundo inteiro.\n\nPela sua dolorosa Paixão,\ntende misericórdia de nós e do mundo inteiro.',
+        titulo: 'Ave-Maria',
+        texto: 'Ave Maria, cheia de graça,\no Senhor é convosco.\nBendita sois vós entre as mulheres\ne bendito é o fruto do vosso ventre, Jesus.\n\nSanta Maria, Mãe de Deus,\nrogai por nós, pecadores,\nagora e na hora de nossa morte. Amém.',
       },
+
       {
         tipo: 'oracao',
-        titulo: 'Oração final',
-        subtitulo: '(Repita três vezes)',
-        texto: 'Deus Santo, Deus Forte, Deus Imortal,\ntende misericórdia de nós e do mundo inteiro.',
+        titulo: 'Creio em Deus',
+        texto: 'Creio em Deus Pai todo-poderoso,\ncriador do céu e da terra.\n\nE em Jesus Cristo, seu único Filho, nosso Senhor,\nque foi concebido pelo poder do Espírito Santo,\nnasceu da Virgem Maria,\npadeceu sob Pôncio Pilatos,\nfoi crucificado, morto e sepultado,\ndesceu à mansão dos mortos,\nressuscitou ao terceiro dia,\nsubiu aos céus,\nestá sentado à direita de Deus Pai todo-poderoso,\ndonde há de vir a julgar os vivos e os mortos.\n\nCreio no Espírito Santo,\nna santa Igreja Católica,\nna comunhão dos santos,\nna remissão dos pecados,\nna ressurreição da carne,\nna vida eterna. Amém.',
       },
+
+      // CINCO DEZENAS
+      // Cada dezena começa com a oração das contas grandes,
+      // seguida de dez repetições da oração das contas pequenas.
+
+      ...Array.from({ length: 5 }, (_, dezena) => [
+        {
+          tipo: 'oracao',
+          titulo: `Dezena ${dezena + 1} — Contas grandes`,
+          subtitulo: 'Eterno Pai',
+          texto: 'Eterno Pai, eu Vos ofereço o Corpo e o Sangue, a Alma e a Divindade de Vosso diletíssimo Filho, Nosso Senhor Jesus Cristo, em expiação dos nossos pecados e dos do mundo inteiro.',
+        },
+
+        ...Array.from({ length: 10 }, (_, repeticao) => ({
+          tipo: 'oracao',
+          titulo: `Dezena ${dezena + 1} — Conta pequena ${repeticao + 1} de 10`,
+          subtitulo: 'Pela sua dolorosa Paixão',
+          texto: 'Pela sua dolorosa Paixão, tende misericórdia de nós e do mundo inteiro.',
+        })),
+      ]).flat(),
+
+      // ORAÇÃO FINAL — TRISÁGIO
+
+      ...Array.from({ length: 3 }, (_, repeticao) => ({
+        tipo: 'oracao',
+        titulo: `Oração final — ${repeticao + 1}ª repetição`,
+        subtitulo: 'Deus Santo, Deus Forte, Deus Imortal',
+        texto: 'Deus Santo, Deus Forte, Deus Imortal, tende misericórdia de nós e do mundo inteiro.',
+      })),
     ],
   },
 

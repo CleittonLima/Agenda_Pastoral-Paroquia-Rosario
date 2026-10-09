@@ -1045,3 +1045,252 @@ export async function gerenciarUsuarios(acao, dados = {}) {
     };
   }
 }
+
+// ==========================================================
+// ORAÇÕES E TERÇOS
+// Busca os conteúdos cadastrados no Supabase
+// ==========================================================
+
+export async function buscarOracoesETercos(apenasAtivos = true) {
+  try {
+    // ========================================================
+    // ORAÇÕES
+    // ========================================================
+
+    let consultaOracoes = supabase
+      .from('oracoes')
+      .select('*')
+      .order('ordem', { ascending: true });
+
+    if (apenasAtivos) {
+      consultaOracoes = consultaOracoes.eq('status', 'Ativo');
+    }
+
+    const {
+      data: oracoesDB,
+      error: erroOracoes,
+    } = await consultaOracoes;
+
+    if (erroOracoes) {
+      throw erroOracoes;
+    }
+
+    const oracoes = (oracoesDB || []).map(item => ({
+      id: item.id,
+      nome: item.titulo,
+      titulo: item.titulo,
+      categoria: item.categoria || 'Oração',
+      descricao: item.descricao || '',
+      texto: item.texto || '',
+      imagem: item.imagem || '',
+      ordem: item.ordem || 1,
+      status: item.status,
+      origem: 'supabase',
+    }));
+
+    // ========================================================
+    // TERÇOS
+    // ========================================================
+
+    let consultaTercos = supabase
+      .from('tercos')
+      .select('*')
+      .order('ordem', { ascending: true });
+
+    if (apenasAtivos) {
+      consultaTercos = consultaTercos.eq('status', 'Ativo');
+    }
+
+    const {
+      data: tercosDB,
+      error: erroTercos,
+    } = await consultaTercos;
+
+    if (erroTercos) {
+      throw erroTercos;
+    }
+
+    const tercos = (tercosDB || []).map(item => ({
+      id: item.id,
+      nome: item.titulo,
+      titulo: item.titulo,
+      descricao: item.descricao || '',
+      imagem: item.imagem || '',
+      partes: Array.isArray(item.partes)
+        ? item.partes
+        : [],
+      conclusao: item.conclusao || '',
+      ordem: item.ordem || 1,
+      status: item.status,
+      origem: 'supabase',
+    }));
+
+    // ========================================================
+    // RETORNO
+    // ========================================================
+
+    return {
+      ok: true,
+      oracoes,
+      tercos,
+    };
+  } catch (erro) {
+    console.error('Erro ao buscar orações e terços:', erro);
+
+    return {
+      ok: false,
+      erro: erro.message || String(erro),
+      oracoes: [],
+      tercos: [],
+    };
+  }
+}
+
+// ==========================================================
+// SALVAR ORAÇÃO
+// Cadastra uma nova oração ou atualiza uma existente
+// ==========================================================
+
+export async function salvarOracao(oracao) {
+  try {
+    const dados = {
+      titulo: oracao.titulo || oracao.nome || '',
+      categoria: oracao.categoria || 'Oração',
+      descricao: oracao.descricao || '',
+      texto: oracao.texto || '',
+      imagem: oracao.imagem || '',
+      ordem: Number(oracao.ordem) || 1,
+      status: oracao.status || 'Ativo',
+      updated_at: new Date().toISOString(),
+    };
+
+    let resultado;
+
+    if (oracao.id) {
+      resultado = await supabase
+        .from('oracoes')
+        .update(dados)
+        .eq('id', oracao.id);
+    } else {
+      resultado = await supabase
+        .from('oracoes')
+        .insert(dados);
+    }
+
+    if (resultado.error) {
+      throw resultado.error;
+    }
+
+    return { ok: true };
+  } catch (erro) {
+    console.error('Erro ao salvar oração:', erro);
+
+    return {
+      ok: false,
+      erro: erro.message || String(erro),
+    };
+  }
+}
+
+
+// ==========================================================
+// EXCLUIR ORAÇÃO
+// ==========================================================
+
+export async function excluirOracao(id) {
+  try {
+    const { error } = await supabase
+      .from('oracoes')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      throw error;
+    }
+
+    return { ok: true };
+  } catch (erro) {
+    console.error('Erro ao excluir oração:', erro);
+
+    return {
+      ok: false,
+      erro: erro.message || String(erro),
+    };
+  }
+}
+
+
+// ==========================================================
+// SALVAR TERÇO
+// Cadastra um novo terço ou atualiza um existente
+// ==========================================================
+
+export async function salvarTerco(terco) {
+  try {
+    const dados = {
+      titulo: terco.titulo || terco.nome || '',
+      descricao: terco.descricao || '',
+      imagem: terco.imagem || '',
+      partes: Array.isArray(terco.partes)
+        ? terco.partes
+        : [],
+      conclusao: terco.conclusao || '',
+      ordem: Number(terco.ordem) || 1,
+      status: terco.status || 'Ativo',
+      updated_at: new Date().toISOString(),
+    };
+
+    let resultado;
+
+    if (terco.id) {
+      resultado = await supabase
+        .from('tercos')
+        .update(dados)
+        .eq('id', terco.id);
+    } else {
+      resultado = await supabase
+        .from('tercos')
+        .insert(dados);
+    }
+
+    if (resultado.error) {
+      throw resultado.error;
+    }
+
+    return { ok: true };
+  } catch (erro) {
+    console.error('Erro ao salvar terço:', erro);
+
+    return {
+      ok: false,
+      erro: erro.message || String(erro),
+    };
+  }
+}
+
+
+// ==========================================================
+// EXCLUIR TERÇO
+// ==========================================================
+
+export async function excluirTerco(id) {
+  try {
+    const { error } = await supabase
+      .from('tercos')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      throw error;
+    }
+
+    return { ok: true };
+  } catch (erro) {
+    console.error('Erro ao excluir terço:', erro);
+
+    return {
+      ok: false,
+      erro: erro.message || String(erro),
+    };
+  }
+}

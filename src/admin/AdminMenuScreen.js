@@ -72,6 +72,13 @@ const SECOES = [
     cargosPermitidos: ['PROGRAMADOR', 'PADRE'],
   },
   {
+    id: 'AdminOracoes',
+    icone: 'book-outline',
+    titulo: 'Orações e Terços',
+    desc: 'Gerenciar orações e terços',
+    cargosPermitidos: ['PROGRAMADOR', 'PADRE'],
+  },
+  {
     id: 'AdminMinhaConta',
     icone: 'person-circle-outline',
     titulo: 'Minha Conta',

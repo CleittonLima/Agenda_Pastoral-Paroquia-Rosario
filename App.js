@@ -34,6 +34,7 @@ import AdminGaleriaScreen from './src/admin/AdminGaleriaScreen';
 import AdminRedesSociaisScreen from './src/admin/AdminRedesSociaisScreen';
 import AdminConfiguracoesScreen from './src/admin/AdminConfiguracoesScreen';
 import AdminPdfScreen from './src/admin/AdminPdfScreen';
+import AdminOracoesScreen from './src/admin/AdminOracoesScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -127,6 +128,7 @@ const [mostrarBoasVindas, setMostrarBoasVindas] = useState(true);
         <Stack.Screen name="AdminRedesSociais" component={AdminRedesSociaisScreen} />
         <Stack.Screen name="AdminConfiguracoes" component={AdminConfiguracoesScreen} />
         <Stack.Screen name="AdminPdf" component={AdminPdfScreen} />
+        <Stack.Screen name="AdminOracoes" component={AdminOracoesScreen} />
       </Stack.Navigator>
     );
   }
