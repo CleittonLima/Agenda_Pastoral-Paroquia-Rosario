@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAdmin } from './AdminContext';
+import ConfirmModal from './components/ConfirmModal';
 
 const SECOES = [
   {
@@ -70,6 +71,12 @@ const SECOES = [
     desc: 'Dados da paróquia e senha',
     cargosPermitidos: ['PROGRAMADOR', 'PADRE'],
   },
+  {
+    id: 'AdminMinhaConta',
+    icone: 'person-circle-outline',
+    titulo: 'Minha Conta',
+    desc: 'Seus dados pessoais e senha',
+  },
 ];
 
 export default function AdminMenuScreen() {
@@ -82,6 +89,9 @@ export default function AdminMenuScreen() {
     sair,
     cargo,
   } = useAdmin();
+
+  const [confirmandoSair, setConfirmandoSair] = useState(false);
+  const [saindo, setSaindo] = useState(false);
 
   useEffect(() => {
     recarregar();
@@ -106,11 +116,26 @@ export default function AdminMenuScreen() {
     });
   }
 
+  async function executarSaida() {
+    if (saindo) return;
+
+    setSaindo(true);
+    setConfirmandoSair(false);
+
+    try {
+      await sair();
+      navigation.replace('Principal');
+    } catch (erro) {
+      console.error('Erro ao sair do painel:', erro);
+      setSaindo(false);
+    }
+  }
+
   return (
     <View style={styles.container}>
       {/* CABEÇALHO */}
       <View style={styles.cabecalho}>
-        <View>
+        <View style={styles.titulosCabecalho}>
           <Text style={styles.cabecalhoTitulo}>
             Painel Administrativo
           </Text>
@@ -121,23 +146,28 @@ export default function AdminMenuScreen() {
         </View>
 
         <TouchableOpacity
-          onPress={async () => {
-            await sair();
-            navigation.replace('Principal');
-          }}
-          style={styles.botaoVoltarApp}
-          hitSlop={{
-            top: 10,
-            bottom: 10,
-            left: 10,
-            right: 10,
-          }}
+          onPress={() => setConfirmandoSair(true)}
+          style={styles.botaoSair}
+          disabled={saindo}
+          activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel="Sair do painel administrativo"
         >
-          <Ionicons
-            name="exit-outline"
-            size={20}
-            color="#fff"
-          />
+          {saindo ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <>
+              <Ionicons
+                name="log-out-outline"
+                size={19}
+                color="#fff"
+              />
+
+              <Text style={styles.botaoSairTexto}>
+                SAIR
+              </Text>
+            </>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -179,6 +209,7 @@ export default function AdminMenuScreen() {
               key={secao.id}
               style={styles.item}
               onPress={() => navigation.navigate(secao.id)}
+              activeOpacity={0.75}
             >
               <View style={styles.itemIcone}>
                 <Ionicons
@@ -207,6 +238,17 @@ export default function AdminMenuScreen() {
           ))}
         </View>
       </ScrollView>
+
+      {/* CONFIRMAÇÃO DE SAÍDA */}
+      <ConfirmModal
+        visivel={confirmandoSair}
+        titulo="Sair do painel administrativo?"
+        mensagem="Você será desconectado da sua conta e precisará fazer login novamente para acessar o painel."
+        textoConfirmar="SAIR"
+        destrutivo
+        onConfirmar={executarSaida}
+        onCancelar={() => setConfirmandoSair(false)}
+      />
     </View>
   );
 }
@@ -239,15 +281,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: 12,
   },
 
-  botaoVoltarApp: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    alignItems: 'center',
-    justifyContent: 'center',
+  titulosCabecalho: {
+    flex: 1,
   },
 
   cabecalhoTitulo: {
@@ -260,6 +298,26 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.8)',
     fontSize: 13,
     marginTop: 2,
+  },
+
+  botaoSair: {
+    minHeight: 38,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.16)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.25)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+
+  botaoSairTexto: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.5,
   },
 
   scroll: {

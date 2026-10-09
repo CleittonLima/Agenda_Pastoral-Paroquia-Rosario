@@ -9,25 +9,26 @@ import {
   Image,
   ActivityIndicator,
 } from 'react-native';
+
 import { useAdmin } from './AdminContext';
-import { salvarConfiguracoes, enviarImagem } from '../api/api';
+import {
+  salvarConfiguracoes,
+  enviarImagem,
+} from '../api/api';
 import { supabase } from '../supabase/config';
 import AdminHeader from './components/AdminHeader';
-import ConfirmModal from './components/ConfirmModal';
 import { useSeletorImagem } from './components/RecorteImagem';
 import { descricaoFormato } from './components/formatosImagem';
 import { useApp } from '../context/AppContext';
 
 // Formato de recorte de cada imagem desta tela
-// (ver formatosImagem.js)
 const FORMATO_POR_CAMPO = {
   LogoPrincipal: 'logo',
   ImagemTelaInicial: 'imagemInicial',
 };
 
 export default function AdminConfiguracoesScreen() {
-  const { dados, recarregar, sair } = useAdmin();
-
+  const { dados, recarregar } = useAdmin();
   const { mostrarToast } = useApp();
 
   const [form, setForm] = useState({});
@@ -38,15 +39,13 @@ export default function AdminConfiguracoesScreen() {
   const [senhaAtual, setSenhaAtual] = useState('');
   const [senhaNova, setSenhaNova] = useState('');
   const [trocando, setTrocando] = useState(false);
-  const [confirmandoSair, setConfirmandoSair] = useState(false);
 
   const {
     escolherImagem: escolherComRecorte,
     modalRecorte,
   } = useSeletorImagem();
 
-  // Valores mais recentes
-  // (mesmo após esperar o envio da imagem)
+  // Mantém os valores mais recentes do formulário
   const formAtual = useRef(form);
 
   formAtual.current = form;
@@ -87,14 +86,23 @@ export default function AdminConfiguracoesScreen() {
 
         setForm(atualizado);
 
-        await salvarConfiguracoes({
+        const resultado = await salvarConfiguracoes({
           ...dados.config,
           ...atualizado,
         });
 
+        if (!resultado.ok) {
+          throw new Error(
+            resultado.erro ||
+              'Não foi possível salvar a configuração da imagem.'
+          );
+        }
+
         await recarregar();
 
-        mostrarToast('Imagem enviada e salva com sucesso!');
+        mostrarToast(
+          'Imagem enviada e salva com sucesso!'
+        );
       } else {
         mostrarToast(
           resposta.erro ||
@@ -104,7 +112,8 @@ export default function AdminConfiguracoesScreen() {
       }
     } catch (e) {
       mostrarToast(
-        'Falha ao enviar a imagem. Verifique sua internet.',
+        e.message ||
+          'Falha ao enviar a imagem. Verifique sua internet.',
         'erro'
       );
     } finally {
@@ -115,29 +124,46 @@ export default function AdminConfiguracoesScreen() {
   async function salvar() {
     setSalvando(true);
 
-    const resultado = await salvarConfiguracoes({
-      ...dados.config,
-      ...form,
-    });
+    try {
+      const resultado = await salvarConfiguracoes({
+        ...dados.config,
+        ...form,
+      });
 
-    setSalvando(false);
+      if (resultado.ok) {
+        await recarregar();
 
-    if (resultado.ok) {
-      await recarregar();
-
+        mostrarToast(
+          'Configurações atualizadas com sucesso!'
+        );
+      } else {
+        mostrarToast(
+          resultado.erro ||
+            'Não foi possível salvar.',
+          'erro'
+        );
+      }
+    } catch (erro) {
       mostrarToast(
-        'Configurações atualizadas com sucesso!'
-      );
-    } else {
-      mostrarToast(
-        resultado.erro ||
-          'Não foi possível salvar.',
+        erro.message ||
+          'Ocorreu um erro ao salvar as configurações.',
         'erro'
       );
+    } finally {
+      setSalvando(false);
     }
   }
 
   async function alterarSenha() {
+    if (!senhaAtual) {
+      mostrarToast(
+        'Informe sua senha atual.',
+        'aviso'
+      );
+
+      return;
+    }
+
     if (senhaNova.length < 6) {
       mostrarToast(
         'A nova senha deve ter pelo menos 6 caracteres.',
@@ -210,10 +236,6 @@ export default function AdminConfiguracoesScreen() {
     }
   }
 
-  function confirmarSair() {
-    setConfirmandoSair(true);
-  }
-
   return (
     <View style={styles.container}>
       <AdminHeader titulo="Configurações Gerais" />
@@ -221,6 +243,7 @@ export default function AdminConfiguracoesScreen() {
       <ScrollView
         contentContainerStyle={styles.scroll}
       >
+        {/* NOME DA PARÓQUIA */}
         <View style={styles.grupo}>
           <Text style={styles.rotulo}>
             Nome da paróquia
@@ -235,6 +258,7 @@ export default function AdminConfiguracoesScreen() {
           />
         </View>
 
+        {/* LOGO PRINCIPAL */}
         <ImagemComUpload
           rotulo="Logo principal"
           valor={form.LogoPrincipal}
@@ -250,6 +274,7 @@ export default function AdminConfiguracoesScreen() {
           }
         />
 
+        {/* IMAGEM DA TELA INICIAL */}
         <ImagemComUpload
           rotulo="Imagem da tela inicial"
           valor={form.ImagemTelaInicial}
@@ -265,6 +290,106 @@ export default function AdminConfiguracoesScreen() {
           }
         />
 
+        {/* PERSONALIZAÇÃO DA TELA DE BOAS-VINDAS */}
+        <View style={styles.secaoPersonalizacao}>
+          <Text style={styles.secaoTitulo}>
+            Tela de boas-vindas
+          </Text>
+
+          <Text style={styles.dicaSecao}>
+            Personalize as mensagens e os botões
+            exibidos na primeira visita e nos
+            próximos acessos.
+          </Text>
+
+          {/* MENSAGEM DO PRIMEIRO ACESSO */}
+          <View style={styles.grupo}>
+            <Text style={styles.rotulo}>
+              Mensagem do primeiro acesso
+            </Text>
+
+            <TextInput
+              style={[
+                styles.input,
+                styles.inputMultilinha,
+              ]}
+              value={
+                form.MensagemBoasVindas ??
+                'Que bom ter você aqui! Para começarmos, como podemos te chamar?'
+              }
+              onChangeText={v =>
+                mudar('MensagemBoasVindas', v)
+              }
+              multiline
+              textAlignVertical="top"
+              placeholder="Que bom ter você aqui! Para começarmos, como podemos te chamar?"
+            />
+          </View>
+
+          {/* MENSAGEM DE RETORNO */}
+          <View style={styles.grupo}>
+            <Text style={styles.rotulo}>
+              Mensagem para quem já acessou
+            </Text>
+
+            <TextInput
+              style={[
+                styles.input,
+                styles.inputMultilinha,
+              ]}
+              value={
+                form.MensagemRetorno ??
+                'Vivendo a fé, unidos em comunidade.'
+              }
+              onChangeText={v =>
+                mudar('MensagemRetorno', v)
+              }
+              multiline
+              textAlignVertical="top"
+              placeholder="Vivendo a fé, unidos em comunidade."
+            />
+          </View>
+
+          {/* BOTÃO DO PRIMEIRO ACESSO */}
+          <View style={styles.grupo}>
+            <Text style={styles.rotulo}>
+              Texto do botão de primeiro acesso
+            </Text>
+
+            <TextInput
+              style={styles.input}
+              value={
+                form.TextoBotaoBoasVindas ??
+                'Entrar 🙏'
+              }
+              onChangeText={v =>
+                mudar('TextoBotaoBoasVindas', v)
+              }
+              placeholder="Entrar 🙏"
+            />
+          </View>
+
+          {/* BOTÃO DE RETORNO */}
+          <View style={styles.grupo}>
+            <Text style={styles.rotulo}>
+              Texto do botão de retorno
+            </Text>
+
+            <TextInput
+              style={styles.input}
+              value={
+                form.TextoBotaoRetorno ??
+                'Acessar aplicativo'
+              }
+              onChangeText={v =>
+                mudar('TextoBotaoRetorno', v)
+              }
+              placeholder="Acessar aplicativo"
+            />
+          </View>
+        </View>
+
+                {/* FRASE DO RODAPÉ */}
         <View style={styles.grupo}>
           <Text style={styles.rotulo}>
             Frase do rodapé / versículo
@@ -279,6 +404,7 @@ export default function AdminConfiguracoesScreen() {
           />
         </View>
 
+        {/* TELEFONE */}
         <View style={styles.grupo}>
           <Text style={styles.rotulo}>
             Telefone
@@ -293,6 +419,7 @@ export default function AdminConfiguracoesScreen() {
           />
         </View>
 
+        {/* E-MAIL */}
         <View style={styles.grupo}>
           <Text style={styles.rotulo}>
             E-mail
@@ -305,9 +432,11 @@ export default function AdminConfiguracoesScreen() {
               mudar('Email', v)
             }
             autoCapitalize="none"
+            keyboardType="email-address"
           />
         </View>
 
+        {/* ENDEREÇO */}
         <View style={styles.grupo}>
           <Text style={styles.rotulo}>
             Endereço
@@ -322,8 +451,12 @@ export default function AdminConfiguracoesScreen() {
           />
         </View>
 
+        {/* SALVAR CONFIGURAÇÕES */}
         <TouchableOpacity
-          style={styles.botaoSalvar}
+          style={[
+            styles.botaoSalvar,
+            salvando && styles.botaoDesabilitado,
+          ]}
           onPress={salvar}
           disabled={salvando}
         >
@@ -331,12 +464,12 @@ export default function AdminConfiguracoesScreen() {
             <ActivityIndicator color="#fff" />
           ) : (
             <Text style={styles.botaoSalvarTexto}>
-              Salvar
+              Salvar configurações
             </Text>
           )}
         </TouchableOpacity>
 
-        {/* ---- TROCAR SENHA ---- */}
+        {/* TROCAR SENHA */}
         <View style={styles.secaoSenha}>
           <Text style={styles.secaoTitulo}>
             Trocar senha do painel
@@ -352,6 +485,8 @@ export default function AdminConfiguracoesScreen() {
               value={senhaAtual}
               onChangeText={setSenhaAtual}
               secureTextEntry
+              autoCapitalize="none"
+              placeholder="Digite sua senha atual"
             />
           </View>
 
@@ -365,11 +500,16 @@ export default function AdminConfiguracoesScreen() {
               value={senhaNova}
               onChangeText={setSenhaNova}
               secureTextEntry
+              autoCapitalize="none"
+              placeholder="Mínimo de 6 caracteres"
             />
           </View>
 
           <TouchableOpacity
-            style={styles.botaoSecundario}
+            style={[
+              styles.botaoSecundario,
+              trocando && styles.botaoDesabilitado,
+            ]}
             onPress={alterarSenha}
             disabled={trocando}
           >
@@ -384,35 +524,16 @@ export default function AdminConfiguracoesScreen() {
             )}
           </TouchableOpacity>
         </View>
-
-        <TouchableOpacity
-          style={styles.botaoSair}
-          onPress={confirmarSair}
-        >
-          <Text style={styles.botaoSairTexto}>
-            🚪 Sair do painel
-          </Text>
-        </TouchableOpacity>
       </ScrollView>
-
-      <ConfirmModal
-        visivel={confirmandoSair}
-        titulo="Sair do painel"
-        mensagem="Deseja mesmo sair do painel administrativo?"
-        textoConfirmar="Sair"
-        onConfirmar={() => {
-          setConfirmandoSair(false);
-          sair();
-        }}
-        onCancelar={() =>
-          setConfirmandoSair(false)
-        }
-      />
 
       {modalRecorte}
     </View>
   );
 }
+
+/* =========================================================
+   COMPONENTE DE ENVIO DE IMAGENS
+========================================================= */
 
 function ImagemComUpload({
   rotulo,
@@ -435,9 +556,10 @@ function ImagemComUpload({
             <Image
               source={{ uri: valor }}
               style={styles.preview}
+              resizeMode="cover"
             />
           ) : (
-            <Text style={{ fontSize: 22 }}>
+            <Text style={styles.iconeImagem}>
               🖼️
             </Text>
           )}
@@ -449,9 +571,11 @@ function ImagemComUpload({
           disabled={enviando}
         >
           <Text style={styles.botaoEscolherTexto}>
-            {valor
-              ? 'Trocar imagem'
-              : 'Escolher imagem'}
+            {enviando
+              ? 'Enviando...'
+              : valor
+                ? 'Trocar imagem'
+                : 'Escolher imagem'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -464,6 +588,10 @@ function ImagemComUpload({
     </View>
   );
 }
+
+/* =========================================================
+   ESTILOS
+========================================================= */
 
 const styles = StyleSheet.create({
   container: {
@@ -497,6 +625,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
 
+  inputMultilinha: {
+    minHeight: 76,
+    paddingTop: 11,
+  },
+
   imagemLinha: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -520,6 +653,10 @@ const styles = StyleSheet.create({
     height: '100%',
   },
 
+  iconeImagem: {
+    fontSize: 22,
+  },
+
   botaoEscolher: {
     borderWidth: 1,
     borderColor: '#7A1F2B',
@@ -540,6 +677,21 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
 
+  secaoPersonalizacao: {
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    padding: 16,
+    marginTop: 18,
+    marginBottom: 8,
+  },
+
+  dicaSecao: {
+    fontSize: 12,
+    lineHeight: 18,
+    color: '#8a7d6f',
+    marginBottom: 16,
+  },
+
   botaoSalvar: {
     backgroundColor: '#7A1F2B',
     borderRadius: 12,
@@ -552,6 +704,10 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '700',
     fontSize: 15,
+  },
+
+  botaoDesabilitado: {
+    opacity: 0.6,
   },
 
   secaoSenha: {
@@ -579,18 +735,6 @@ const styles = StyleSheet.create({
 
   botaoSecundarioTexto: {
     color: '#7A1F2B',
-    fontWeight: '700',
-    fontSize: 14,
-  },
-
-  botaoSair: {
-    alignItems: 'center',
-    paddingVertical: 16,
-    marginTop: 20,
-  },
-
-  botaoSairTexto: {
-    color: '#B23A2E',
     fontWeight: '700',
     fontSize: 14,
   },

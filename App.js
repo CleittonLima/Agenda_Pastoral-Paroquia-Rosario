@@ -26,6 +26,7 @@ import AdminMenuScreen from './src/admin/AdminMenuScreen';
 import AdminUsuariosScreen from './src/admin/AdminUsuariosScreen';
 import AdminIgrejasScreen from './src/admin/AdminIgrejasScreen';
 import AdminHorariosScreen from './src/admin/AdminHorariosScreen';
+import AdminMinhaContaScreen from './src/admin/AdminMinhaContaScreen';
 import AdminAvisosScreen from './src/admin/AdminAvisosScreen';
 import AdminEventosScreen from './src/admin/AdminEventosScreen';
 import AdminPixScreen from './src/admin/AdminPixScreen';
@@ -115,6 +116,7 @@ const [mostrarBoasVindas, setMostrarBoasVindas] = useState(true);
         {/* ---- Painel Administrativo (coordenador) ---- */}
         <Stack.Screen name="AdminLogin" component={AdminLoginScreen} />
         <Stack.Screen name="AdminMenu" component={AdminMenuScreen} />
+        <Stack.Screen name="AdminMinhaConta" component={AdminMinhaContaScreen} />
         <Stack.Screen name="AdminUsuarios" component={AdminUsuariosScreen} />
         <Stack.Screen name="AdminIgrejas" component={AdminIgrejasScreen} />
         <Stack.Screen name="AdminHorarios" component={AdminHorariosScreen} />

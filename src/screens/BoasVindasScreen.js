@@ -38,6 +38,29 @@ export default function BoasVindasScreen({
     usuario?.avatar || AVATARES[0].id
   );
 
+  // Configurações personalizadas pelo painel administrativo
+  const config = dados?.config || {};
+
+  const nomeParoquia =
+    config.nomeParoquia ||
+    'Paróquia Nossa Senhora do Rosário';
+
+  const mensagemBoasVindas =
+    config.mensagemBoasVindas ||
+    'Que bom ter você aqui! Para começarmos, como podemos te chamar?';
+
+  const mensagemRetorno =
+    config.mensagemRetorno ||
+    'Vivendo a fé, unidos em comunidade.';
+
+  const textoBotaoBoasVindas =
+    config.textoBotaoBoasVindas ||
+    'Entrar 🙏';
+
+  const textoBotaoRetorno =
+    config.textoBotaoRetorno ||
+    'Acessar aplicativo';
+
   async function concluir() {
     if (!nomeCompleto.trim() || !apelido.trim()) {
       Alert.alert(
@@ -65,12 +88,8 @@ export default function BoasVindasScreen({
       av => av.id === usuario.avatar
     );
 
-    const nomeParoquia =
-      dados?.config?.nomeParoquia ||
-      'Paróquia Nossa Senhora do Rosário';
-
     const logo =
-      dados?.config?.logoPrincipal ||
+      config.logoPrincipal ||
       require('../../assets/logos/brasao.webp');
 
     return (
@@ -105,8 +124,7 @@ export default function BoasVindasScreen({
             style={[
               styles.titulo,
               {
-                color:
-                  temaCores.corTexto || '#222222',
+                color: temaCores.corTexto || '#222222',
               },
             ]}
           >
@@ -124,8 +142,7 @@ export default function BoasVindasScreen({
             style={[
               styles.ola,
               {
-                color:
-                  temaCores.corTexto || '#222222',
+                color: temaCores.corTexto || '#222222',
               },
             ]}
           >
@@ -137,27 +154,25 @@ export default function BoasVindasScreen({
               styles.subtituloRetorno,
               {
                 color:
-                  temaCores.corTextoSecundario ||
-                  '#666666',
+                  temaCores.corTextoSecundario || '#666666',
               },
             ]}
           >
-            Vivendo a fé, unidos em comunidade.
+            {mensagemRetorno}
           </Text>
 
           <TouchableOpacity
             style={[
               styles.botao,
               {
-                backgroundColor:
-                  temaCores.corCabecalho,
+                backgroundColor: temaCores.corCabecalho,
               },
             ]}
             onPress={onConcluir}
             activeOpacity={0.8}
           >
             <Text style={styles.botaoTexto}>
-              Acessar aplicativo
+              {textoBotaoRetorno}
             </Text>
           </TouchableOpacity>
         </View>
@@ -173,7 +188,9 @@ export default function BoasVindasScreen({
     <KeyboardAvoidingView
       style={[
         styles.container,
-        { backgroundColor: temaCores.corCabecalho },
+        {
+          backgroundColor: temaCores.corCabecalho,
+        },
       ]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
@@ -188,17 +205,14 @@ export default function BoasVindasScreen({
         />
 
         <Text style={styles.tituloPrimeiro}>
-          {dados?.config?.nomeParoquia ||
-            'Paróquia N. Sra. do Rosário'}
+          {nomeParoquia}
         </Text>
 
         <Text style={styles.subtituloPrimeiro}>
-          Que bom ter você aqui! Para começarmos,
-          como podemos te chamar?
+          {mensagemBoasVindas}
         </Text>
 
         <View style={styles.card}>
-
           <Text style={styles.rotulo}>
             Nome completo
           </Text>
@@ -256,16 +270,17 @@ export default function BoasVindasScreen({
           <TouchableOpacity
             style={[
               styles.botao,
-              { backgroundColor: temaCores.corCabecalho },
+              {
+                backgroundColor: temaCores.corCabecalho,
+              },
             ]}
             onPress={concluir}
             activeOpacity={0.8}
           >
             <Text style={styles.botaoTexto}>
-              Entrar 🙏
+              {textoBotaoBoasVindas}
             </Text>
           </TouchableOpacity>
-
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -286,18 +301,24 @@ const styles = StyleSheet.create({
   },
 
   cardRetorno: {
-  width: '90%',
-  maxWidth: 520,
-  minHeight: 500,
-  borderRadius: 28,
-  paddingHorizontal: 32,
-  paddingVertical: 36,
-  alignItems: 'center',
-  justifyContent: 'center',
-  alignSelf: 'center',
+    width: '90%',
+    maxWidth: 520,
+    minHeight: 500,
+    borderRadius: 28,
+    paddingHorizontal: 32,
+    paddingVertical: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
   },
 
   logo: {
+    width: 145,
+    height: 145,
+    marginBottom: 18,
+  },
+
+  brasao: {
     width: 145,
     height: 145,
     marginBottom: 18,
@@ -308,6 +329,14 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textAlign: 'center',
     marginBottom: 24,
+  },
+
+  tituloPrimeiro: {
+    color: '#FFFFFF',
+    fontSize: 25,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 12,
   },
 
   ola: {
@@ -338,7 +367,7 @@ const styles = StyleSheet.create({
   },
 
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     borderRadius: 20,
     padding: 24,
     width: '100%',
@@ -348,18 +377,18 @@ const styles = StyleSheet.create({
   rotulo: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#333',
+    color: '#333333',
     marginTop: 8,
   },
 
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#DDDDDD',
     borderRadius: 10,
     padding: 12,
     fontSize: 15,
-    color: '#222',
-    backgroundColor: '#fafafa',
+    color: '#222222',
+    backgroundColor: '#FAFAFA',
   },
 
   avatarScroll: {
@@ -394,8 +423,9 @@ const styles = StyleSheet.create({
   },
 
   botaoTexto: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '700',
+    textAlign: 'center',
   },
 });
