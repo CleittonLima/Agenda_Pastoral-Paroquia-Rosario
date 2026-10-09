@@ -6,6 +6,7 @@ const config = {
   chaveDados: 'eventos',
   tituloPlural: 'Eventos',
   tituloSingular: 'Evento',
+  entidadeHistorico: 'EVENTO',
   agruparPorIgreja: true,
   ordenar: (a, b) => `${a.Data}${a.Hora || ''}`.localeCompare(`${b.Data}${b.Hora || ''}`),
   colunasResumo: [

@@ -15,6 +15,7 @@ import AdminHeader from './components/AdminHeader';
 import { useSeletorImagem } from './components/RecorteImagem';
 import { descricaoFormato } from './components/formatosImagem';
 import { useApp } from '../context/AppContext';
+import { registrarHistorico } from '../api/historico';
 
 export default function AdminPixScreen() {
   const { dados, recarregar } = useAdmin();
@@ -94,9 +95,18 @@ export default function AdminPixScreen() {
 
       await recarregar();
 
-      mostrarToast(
-        'QR Code enviado e salvo com sucesso!'
-      );
+await registrarHistorico({
+  acao: 'EDITAR',
+  entidade: 'PIX',
+  descricao: 'Atualizou o QR Code do PIX',
+  detalhes: {
+    campo: 'QRCode',
+  },
+});
+
+mostrarToast(
+  'QR Code enviado e salvo com sucesso!'
+);
     } catch (e) {
       console.error(
         'Erro ao enviar QR Code:',
@@ -112,27 +122,55 @@ export default function AdminPixScreen() {
     }
   }
 
-  async function salvar() {
-    setSalvando(true);
+async function salvar() {
+  if (salvando) return;
 
+  setSalvando(true);
+
+  try {
     const resultado = await salvarPix(form);
 
-    setSalvando(false);
-
-    if (resultado.ok) {
-      await recarregar();
-
+    if (!resultado.ok) {
       mostrarToast(
-        'Informações do PIX atualizadas com sucesso!'
-      );
-    } else {
-      mostrarToast(
-        resultado.erro ||
-          'Não foi possível salvar.',
+        resultado.erro || 'Não foi possível salvar.',
         'erro'
       );
+
+      return;
     }
+
+    await recarregar();
+
+    await registrarHistorico({
+      acao: 'EDITAR',
+      entidade: 'PIX',
+      descricao: 'Atualizou as informações do PIX',
+      detalhes: {
+        campos: [
+          'TipoChave',
+          'Chave',
+          'Favorecido',
+          'Banco',
+          'Mensagem',
+          'Tutorial',
+        ],
+      },
+    });
+
+    mostrarToast(
+      'Informações do PIX atualizadas com sucesso!'
+    );
+  } catch (erro) {
+    console.error('Erro ao salvar informações do PIX:', erro);
+
+    mostrarToast(
+      'Ocorreu um erro ao salvar as informações do PIX.',
+      'erro'
+    );
+  } finally {
+    setSalvando(false);
   }
+}
 
   return (
     <View style={styles.container}>

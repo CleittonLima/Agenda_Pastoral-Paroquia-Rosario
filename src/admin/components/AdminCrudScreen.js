@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAdmin } from '../AdminContext';
+import { registrarHistorico } from '../../api/historico';
 import { useApp } from '../../context/AppContext';
 import AdminHeader from './AdminHeader';
 import CampoFormulario from './CampoFormulario';
@@ -81,66 +82,125 @@ export default function AdminCrudScreen({ config }) {
   }
 
   async function salvar() {
-    setSalvando(true);
+  if (salvando) return;
 
-    const item = {
-      ...valores,
-      ID: itemEditando ? itemEditando.ID : '',
-    };
+  setSalvando(true);
 
+  const estavaEditando = !!itemEditando;
+
+  const item = {
+    ...valores,
+    ID: itemEditando ? itemEditando.ID : '',
+  };
+
+  try {
     const resultado = await config.salvar(item);
 
-    setSalvando(false);
-
-    if (resultado.ok) {
-      const estavaEditando = !!itemEditando;
-
-      setModalAberto(false);
-
-      await recarregar();
-
+    if (!resultado?.ok) {
       mostrarToast(
-        estavaEditando
-          ? 'Item atualizado com sucesso!'
-          : 'Item cadastrado com sucesso!'
-      );
-    } else {
-      mostrarToast(
-        resultado.erro || 'Não foi possível salvar.',
+        resultado?.erro || 'Não foi possível salvar.',
         'erro'
       );
+      return;
     }
+
+    setModalAberto(false);
+
+    await recarregar();
+
+    mostrarToast(
+      estavaEditando
+        ? 'Item atualizado com sucesso!'
+        : 'Item cadastrado com sucesso!'
+    );
+
+    // Registra o histórico após o sucesso da operação principal.
+    const nomeItem =
+      valores.Nome ||
+      valores.nome ||
+      valores.Titulo ||
+      valores.titulo ||
+      config.tituloSingular;
+
+    await registrarHistorico({
+      acao: estavaEditando ? 'EDITAR' : 'CRIAR',
+      entidade: config.entidadeHistorico || 'CONTEUDO_RELIGIOSO',
+      descricao: `${
+        estavaEditando ? 'Editou' : 'Cadastrou'
+      } ${config.tituloSingular.toLowerCase()}: ${nomeItem}`,
+      detalhes: {
+        id: itemEditando?.ID || null,
+        campos: Object.keys(valores),
+      },
+    });
+  } catch (erro) {
+    console.error('Erro ao salvar item:', erro);
+
+    mostrarToast(
+      'Ocorreu um erro ao salvar o item.',
+      'erro'
+    );
+  } finally {
+    setSalvando(false);
   }
+}
 
   function confirmarExclusao(item) {
     setItemParaExcluir(item);
   }
 
   async function executarExclusao() {
-    if (!itemParaExcluir) return;
+  if (!itemParaExcluir || excluindo) return;
 
-    setExcluindo(true);
+  const itemExcluido = itemParaExcluir;
 
-    const resultado = await config.excluir(
-      itemParaExcluir.ID
-    );
+  setExcluindo(true);
 
-    setExcluindo(false);
-    setItemParaExcluir(null);
+  try {
+    const resultado = await config.excluir(itemExcluido.ID);
 
-    if (!resultado.ok) {
+    if (!resultado?.ok) {
       mostrarToast(
-        resultado.erro || 'Não foi possível excluir.',
+        resultado?.erro || 'Não foi possível excluir.',
         'erro'
       );
 
       return;
     }
 
+    setItemParaExcluir(null);
+
     await recarregar();
 
     mostrarToast('Item excluído com sucesso!');
+
+    // Registra o histórico após a exclusão bem-sucedida.
+    const nomeItem =
+      itemExcluido.Nome ||
+      itemExcluido.nome ||
+      itemExcluido.Titulo ||
+      itemExcluido.titulo ||
+      config.tituloSingular;
+
+    await registrarHistorico({
+      acao: 'EXCLUIR',
+      entidade: config.entidadeHistorico || 'CONTEUDO_RELIGIOSO',
+      descricao: `Excluiu ${config.tituloSingular.toLowerCase()}: ${nomeItem}`,
+      detalhes: {
+        id: itemExcluido.ID,
+      },
+    });
+  } catch (erro) {
+    console.error('Erro ao excluir item:', erro);
+
+    mostrarToast(
+      'Ocorreu um erro ao excluir o item.',
+      'erro'
+    );
+  } finally {
+    setExcluindo(false);
   }
+}
 
   function renderCard(item) {
     const inativo =

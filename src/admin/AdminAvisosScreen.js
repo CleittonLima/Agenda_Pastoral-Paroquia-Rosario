@@ -6,6 +6,7 @@ const config = {
   chaveDados: 'avisos',
   tituloPlural: 'Avisos',
   tituloSingular: 'Aviso',
+  entidadeHistorico: 'AVISO',
   agruparPorIgreja: true,
   ordenar: (a, b) => String(a.Data).localeCompare(String(b.Data)),
   colunasResumo: [

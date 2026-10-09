@@ -52,6 +52,13 @@ const SECOES = [
     desc: 'Fotos de cada igreja',
   },
   {
+    id: 'AdminHistorico',
+    icone: 'time-outline',
+    titulo: 'Histórico de Alterações',
+    desc: 'Consulte as alterações da paróquia',
+    cargosPermitidos: ['PROGRAMADOR', 'PADRE'],
+  },
+  {
     id: 'AdminRedesSociais',
     icone: 'share-social-outline',
     titulo: 'Redes Sociais',

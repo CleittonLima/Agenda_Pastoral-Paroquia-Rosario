@@ -6,6 +6,7 @@ const config = {
   chaveDados: 'igrejas',
   tituloPlural: 'Área Pastoral',
   tituloSingular: 'Igreja/Capela',
+  entidadeHistorico: 'IGREJA',
 
   colunasResumo: [
     { formatar: (item) => item.Nome },

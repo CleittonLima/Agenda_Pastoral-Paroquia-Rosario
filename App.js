@@ -29,6 +29,7 @@ import AdminHorariosScreen from './src/admin/AdminHorariosScreen';
 import AdminMinhaContaScreen from './src/admin/AdminMinhaContaScreen';
 import AdminAvisosScreen from './src/admin/AdminAvisosScreen';
 import AdminEventosScreen from './src/admin/AdminEventosScreen';
+import AdminHistoricoScreen from './src/admin/AdminHistoricoScreen';
 import AdminPixScreen from './src/admin/AdminPixScreen';
 import AdminGaleriaScreen from './src/admin/AdminGaleriaScreen';
 import AdminRedesSociaisScreen from './src/admin/AdminRedesSociaisScreen';
@@ -123,6 +124,7 @@ const [mostrarBoasVindas, setMostrarBoasVindas] = useState(true);
         <Stack.Screen name="AdminHorarios" component={AdminHorariosScreen} />
         <Stack.Screen name="AdminAvisos" component={AdminAvisosScreen} />
         <Stack.Screen name="AdminEventos" component={AdminEventosScreen} />
+        <Stack.Screen name="AdminHistorico" component={AdminHistoricoScreen} />
         <Stack.Screen name="AdminPix" component={AdminPixScreen} />
         <Stack.Screen name="AdminGaleria" component={AdminGaleriaScreen} />
         <Stack.Screen name="AdminRedesSociais" component={AdminRedesSociaisScreen} />

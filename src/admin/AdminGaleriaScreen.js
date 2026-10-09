@@ -20,6 +20,7 @@ import ConfirmModal from './components/ConfirmModal';
 import { useSeletorImagem } from './components/RecorteImagem';
 import { urlImagemOtimizada } from '../utils/imagens';
 import { useApp } from '../context/AppContext';
+import { registrarHistorico } from '../api/historico';
 
 function listaDeUrls(texto) {
   return String(texto || '')
@@ -87,9 +88,20 @@ export default function AdminGaleriaScreen() {
         return;
       }
 
-      await recarregar();
+await recarregar();
 
-      mostrarToast('Foto adicionada com sucesso!');
+await registrarHistorico({
+  acao: 'CRIAR',
+  entidade: 'IMAGEM',
+  descricao: `Adicionou uma foto à galeria de ${igreja.Nome}`,
+  detalhes: {
+    igreja_id: igreja.ID,
+    igreja_nome: igreja.Nome,
+    operacao: 'ADICIONAR_FOTO',
+  },
+});
+
+mostrarToast('Foto adicionada com sucesso!');
     } catch (e) {
       console.error(
         'Erro ao adicionar foto:',
@@ -163,16 +175,40 @@ export default function AdminGaleriaScreen() {
     await recarregar();
 
     if (!excluida.ok) {
-      mostrarToast(
-        'A foto foi removida da galeria, mas não foi possível excluir o arquivo do armazenamento.',
-        'aviso',
-        4000
-      );
+  await registrarHistorico({
+    acao: 'EDITAR',
+    entidade: 'IMAGEM',
+    descricao: `Removeu uma foto da galeria de ${igreja.Nome}, mas houve falha ao excluir o arquivo do armazenamento`,
+    detalhes: {
+      igreja_id: igreja.ID,
+      igreja_nome: igreja.Nome,
+      operacao: 'REMOVER_FOTO',
+      arquivo_excluido: false,
+    },
+  });
 
-      return;
-    }
+  mostrarToast(
+    'A foto foi removida da galeria, mas não foi possível excluir o arquivo do armazenamento.',
+    'aviso',
+    4000
+  );
 
-    mostrarToast('Foto removida com sucesso!');
+  return;
+}
+
+await registrarHistorico({
+  acao: 'EXCLUIR',
+  entidade: 'IMAGEM',
+  descricao: `Removeu uma foto da galeria de ${igreja.Nome}`,
+  detalhes: {
+    igreja_id: igreja.ID,
+    igreja_nome: igreja.Nome,
+    operacao: 'REMOVER_FOTO',
+    arquivo_excluido: true,
+  },
+});
+
+mostrarToast('Foto removida com sucesso!');
   }
 
   return (
