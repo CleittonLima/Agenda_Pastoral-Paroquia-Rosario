@@ -31,6 +31,50 @@ function limitar(valor, minimo, maximo) {
   return Math.min(Math.max(valor, minimo), maximo);
 }
 
+// Identifica imagens PNG selecionadas na galeria.
+function imagemOriginalEhPng(asset) {
+  if (!asset) return false;
+
+  const mimeType = String(asset.mimeType || '').toLowerCase();
+
+  if (mimeType === 'image/png') {
+    return true;
+  }
+
+  const nomeArquivo = String(asset.fileName || asset.uri || '')
+    .split('?')[0]
+    .toLowerCase();
+
+  return nomeArquivo.endsWith('.png');
+}
+
+// Identifica imagens que precisam preservar a transparência.
+function devePreservarTransparencia(asset, formato) {
+  if (formato?.formato === 'png') {
+    return true;
+  }
+
+  if (!asset) return false;
+
+  const mimeType = String(asset.mimeType || '').toLowerCase();
+
+  if (mimeType === 'image/png' || mimeType === 'image/webp') {
+    return true;
+  }
+
+  const nomeArquivo = String(asset.fileName || asset.uri || '')
+    .split('?')[0]
+    .toLowerCase();
+
+  return nomeArquivo.endsWith('.png') ||
+         nomeArquivo.endsWith('.webp');
+}
+
+// Preserva PNGs originais mesmo quando o campo utiliza formato livre.
+function deveSalvarComoPng(asset, formato) {
+  return formato?.formato === 'png' || imagemOriginalEhPng(asset);
+}
+
 // Libera a memória nativa usada pelo expo-image-manipulator
 function liberar(...objetos) {
   objetos.forEach(o => {
@@ -201,10 +245,9 @@ export function RecorteImagemModal({ pedido, onConcluir, onCancelar }) {
         renderizada = await contexto.renderAsync();
 
         const salva = await renderizada.saveAsync({
-          format:
-            pedido.formato.formato === 'png'
-              ? SaveFormat.PNG
-              : SaveFormat.JPEG,
+          format: devePreservarTransparencia(asset, pedido.formato)
+            ? SaveFormat.PNG
+            : SaveFormat.JPEG,
           compress: 0.95,
         });
 
@@ -464,7 +507,7 @@ export function RecorteImagemModal({ pedido, onConcluir, onCancelar }) {
             : contexto.resize({ height: formato.ladoMaximo });
       }
 
-      const png = formato.formato === 'png';
+      const png = devePreservarTransparencia(pedido?.asset, formato);
 
       renderizada = await contexto.renderAsync();
 

@@ -19,6 +19,8 @@ import IgrejasScreen from './src/screens/IgrejasScreen';
 import OfertaScreen from './src/screens/OfertaScreen';
 import OracoesScreen from './src/screens/OracoesScreen';
 import ConfiguracoesScreen from './src/screens/ConfiguracoesScreen';
+import PastoraisScreen from './src/screens/PastoraisScreen';
+import PastoralDetalhesScreen from './src/screens/PastoralDetalhesScreen';
 
 // ---- Telas do Painel Administrativo ----
 import AdminLoginScreen from './src/admin/AdminLoginScreen';
@@ -36,6 +38,7 @@ import AdminRedesSociaisScreen from './src/admin/AdminRedesSociaisScreen';
 import AdminConfiguracoesScreen from './src/admin/AdminConfiguracoesScreen';
 import AdminPdfScreen from './src/admin/AdminPdfScreen';
 import AdminOracoesScreen from './src/admin/AdminOracoesScreen';
+import AdminPastoraisScreen from './src/admin/AdminPastoraisScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -110,10 +113,18 @@ const [mostrarBoasVindas, setMostrarBoasVindas] = useState(true);
     conteudo = (
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {/* ---- App público (fiéis) ---- */}
-        <Stack.Screen name="Principal" component={TabNavigator} />
-        <Stack.Screen name="Oferta" component={OfertaScreen} />
-        <Stack.Screen name="Oracoes" component={OracoesScreen} />
-        <Stack.Screen name="Configuracoes" component={ConfiguracoesScreen} />
+      <Stack.Screen name="Principal" component={TabNavigator} />
+      <Stack.Screen name="Oferta" component={OfertaScreen} />
+      <Stack.Screen name="Oracoes" component={OracoesScreen} />
+      <Stack.Screen name="Configuracoes" component={ConfiguracoesScreen} />
+      <Stack.Screen
+        name="Pastorais"
+        component={PastoraisScreen}
+      />
+<Stack.Screen
+  name="PastoralDetalhes"
+  component={PastoralDetalhesScreen}
+/>
 
         {/* ---- Painel Administrativo (coordenador) ---- */}
         <Stack.Screen name="AdminLogin" component={AdminLoginScreen} />
@@ -131,6 +142,7 @@ const [mostrarBoasVindas, setMostrarBoasVindas] = useState(true);
         <Stack.Screen name="AdminConfiguracoes" component={AdminConfiguracoesScreen} />
         <Stack.Screen name="AdminPdf" component={AdminPdfScreen} />
         <Stack.Screen name="AdminOracoes" component={AdminOracoesScreen} />
+        <Stack.Screen name="AdminPastorais" component={AdminPastoraisScreen} />
       </Stack.Navigator>
     );
   }

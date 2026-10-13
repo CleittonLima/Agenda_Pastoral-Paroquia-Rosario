@@ -5,6 +5,7 @@ import SeletorOpcoes from './SeletorOpcoes';
 import CampoDataHora from './SeletorDataHora';
 import { useSeletorImagem } from './RecorteImagem';
 import { descricaoFormato } from './formatosImagem';
+import CampoGaleria from './CampoGaleria';
 
 export default function CampoFormulario({ campo, valor, onMudar, igrejas }) {
   const [enviando, setEnviando] = useState(false);
@@ -62,6 +63,17 @@ export default function CampoFormulario({ campo, valor, onMudar, igrejas }) {
   if (campo.tipo === 'date' || campo.tipo === 'time') {
     return <CampoDataHora tipo={campo.tipo} rotulo={campo.rotulo} valor={valor} onMudar={onMudar} />;
   }
+
+  if (campo.tipo === 'galeria') {
+  return (
+    <View style={styles.grupo}>
+      <CampoGaleria
+        valor={valor}
+        onMudar={onMudar}
+      />
+    </View>
+  );
+}
 
   if (campo.tipo === 'imagem') {
     // Abre a galeria e depois a ferramenta de recorte no formato do local

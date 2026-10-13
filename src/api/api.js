@@ -182,6 +182,40 @@ export async function buscarTudo() {
       : {};
 
     // ==========================================================
+// PASTORAIS, MOVIMENTOS E GRUPOS
+// ==========================================================
+
+const { data: pastoraisDB, error: pastoraisError } = await supabase
+  .from('pastorais_movimentos')
+  .select('*')
+  .eq('status', 'Ativo')
+  .order('ordem', { ascending: true })
+  .order('nome', { ascending: true });
+
+if (pastoraisError) throw pastoraisError;
+
+const pastoraisMovimentos = (pastoraisDB || []).map(item => ({
+  ID: item.id,
+  Nome: item.nome || '',
+  Categoria: item.categoria || 'Outro',
+  CategoriaPersonalizada: item.categoria_personalizada || '',
+  Capa: item.capa || '',
+  Lema: item.lema || '',
+  Galeria: Array.isArray(item.galeria) ? item.galeria : [],
+  Sobre: item.sobre || '',
+  Atividades: item.atividades || '',
+  Objetivo: item.objetivo || '',
+  DiasEncontros: item.dias_encontros || '',
+  Logo: item.logo || '',
+  WhatsApp: item.whatsapp || '',
+  TextoBotaoContato: item.texto_botao_contato || '',
+  Ordem: item.ordem ?? 0,
+  Status: item.status || 'Inativo',
+  CreatedAt: item.created_at,
+  UpdatedAt: item.updated_at,
+}));
+
+    // ==========================================================
     // RETORNO
     // ==========================================================
     return {
@@ -190,6 +224,7 @@ export async function buscarTudo() {
       horarios,
       avisos,
       eventos,
+      pastoraisMovimentos,
       pix,
       config,
     };
@@ -363,7 +398,42 @@ export async function buscarTudoAdmin() {
           PdfInfo: configDB.pdf_info,
         }
       : {};
+// ==========================================================
+// PASTORAIS, MOVIMENTOS E GRUPOS
+// O painel administrativo precisa carregar ativos e inativos.
+// ==========================================================
 
+const {
+  data: pastoraisDB,
+  error: pastoraisError,
+} = await supabase
+  .from('pastorais_movimentos')
+  .select('*')
+  .order('ordem', { ascending: true })
+  .order('nome', { ascending: true });
+
+if (pastoraisError) throw pastoraisError;
+
+const pastoraisMovimentos = (pastoraisDB || []).map(item => ({
+  ID: item.id,
+  Nome: item.nome || '',
+  Categoria: item.categoria || 'Outro',
+  CategoriaPersonalizada: item.categoria_personalizada || '',
+  Capa: item.capa || '',
+  Lema: item.lema || '',
+  Galeria: Array.isArray(item.galeria) ? item.galeria : [],
+  Sobre: item.sobre || '',
+  Atividades: item.atividades || '',
+  Objetivo: item.objetivo || '',
+  DiasEncontros: item.dias_encontros || '',
+  Logo: item.logo || '',
+  WhatsApp: item.whatsapp || '',
+  TextoBotaoContato: item.texto_botao_contato || '',
+  Ordem: item.ordem ?? 0,
+  Status: item.status || 'Inativo',
+  CreatedAt: item.created_at,
+  UpdatedAt: item.updated_at,
+}));
     // ==========================================================
     // RETORNO
     // ==========================================================
@@ -373,6 +443,7 @@ export async function buscarTudoAdmin() {
       horarios,
       avisos,
       eventos,
+      pastoraisMovimentos,
       pix,
       config,
     };
@@ -1287,6 +1358,272 @@ export async function excluirTerco(id) {
     return { ok: true };
   } catch (erro) {
     console.error('Erro ao excluir terço:', erro);
+
+    return {
+      ok: false,
+      erro: erro.message || String(erro),
+    };
+  }
+}
+
+// ============================================================
+// PASTORAIS, MOVIMENTOS E GRUPOS
+// ============================================================
+
+// ------------------------------------------------------------
+// BUSCAR REGISTROS
+// Por padrão, retorna somente os publicados.
+// Com false, busca também os inativos, conforme as permissões.
+// ------------------------------------------------------------
+
+export async function buscarPastoraisMovimentos(apenasAtivos = true) {
+  try {
+    let consulta = supabase
+      .from('pastorais_movimentos')
+      .select('*')
+      .order('ordem', { ascending: true })
+      .order('nome', { ascending: true });
+
+    if (apenasAtivos) {
+      consulta = consulta.eq('status', 'Ativo');
+    }
+
+    const { data, error } = await consulta;
+
+    if (error) throw error;
+
+    const registros = (data || []).map(item => ({
+      id: item.id,
+      nome: item.nome || '',
+      categoria: item.categoria || 'Outro',
+      categoriaPersonalizada: item.categoria_personalizada || '',
+      capa: item.capa || '',
+      lema: item.lema || '',
+      galeria: Array.isArray(item.galeria) ? item.galeria : [],
+      sobre: item.sobre || '',
+      atividades: item.atividades || '',
+      objetivo: item.objetivo || '',
+      diasEncontros: item.dias_encontros || '',
+      logo: item.logo || '',
+      whatsapp: item.whatsapp || '',
+      textoBotaoContato: item.texto_botao_contato || '',
+      ordem: item.ordem ?? 0,
+      status: item.status || 'Inativo',
+      createdAt: item.created_at,
+      updatedAt: item.updated_at,
+    }));
+
+    return {
+      ok: true,
+      registros,
+    };
+  } catch (erro) {
+    console.error('Erro ao buscar pastorais e movimentos:', erro);
+
+    return {
+      ok: false,
+      erro: erro.message || String(erro),
+      registros: [],
+    };
+  }
+}
+
+
+// ------------------------------------------------------------
+// SALVAR REGISTRO
+// Cadastra um novo registro ou atualiza um existente.
+// As imagens são armazenadas no Supabase Storage.
+// ------------------------------------------------------------
+
+export async function salvarPastoralMovimento(registro) {
+  try {
+    const dados = {
+      nome: (registro.Nome ?? registro.nome ?? '').trim(),
+
+      categoria:
+        registro.Categoria ??
+        registro.categoria ??
+        'Outro',
+
+      categoria_personalizada:
+        (registro.Categoria ?? registro.categoria) === 'Outro'
+          ? (
+              registro.CategoriaPersonalizada ??
+              registro.categoriaPersonalizada ??
+              ''
+            ).trim() || null
+          : null,
+
+      capa: registro.Capa ?? registro.capa ?? null,
+
+      lema: (
+        registro.Lema ??
+        registro.lema ??
+        ''
+      ).trim() || null,
+
+      galeria:
+        registro.Galeria ??
+        registro.galeria ??
+        [],
+
+      sobre: (
+        registro.Sobre ??
+        registro.sobre ??
+        ''
+      ).trim() || null,
+
+      atividades: (
+        registro.Atividades ??
+        registro.atividades ??
+        ''
+      ).trim() || null,
+
+      objetivo: (
+        registro.Objetivo ??
+        registro.objetivo ??
+        ''
+      ).trim() || null,
+
+      dias_encontros: (
+        registro.DiasEncontros ??
+        registro.diasEncontros ??
+        ''
+      ).trim() || null,
+
+      logo: registro.Logo ?? registro.logo ?? null,
+
+      whatsapp: (
+        registro.WhatsApp ??
+        registro.whatsapp ??
+        ''
+      ).trim() || null,
+
+      texto_botao_contato: (
+        registro.TextoBotaoContato ??
+        registro.textoBotaoContato ??
+        ''
+      ).trim() || null,
+
+      ordem: Number(
+        registro.Ordem ??
+        registro.ordem ??
+        0
+      ) || 0,
+
+      status:
+        registro.Status ??
+        registro.status ??
+        'Inativo',
+
+      updated_at: new Date().toISOString(),
+    };
+
+    if (!dados.nome) {
+      return {
+        ok: false,
+        erro: 'Informe o nome da pastoral, movimento ou grupo.',
+      };
+    }
+
+    const id = registro.ID ?? registro.id;
+
+    let resultado;
+
+    if (id) {
+      resultado = await supabase
+        .from('pastorais_movimentos')
+        .update(dados)
+        .eq('id', id);
+    } else {
+      resultado = await supabase
+        .from('pastorais_movimentos')
+        .insert(dados);
+    }
+
+    if (resultado.error) {
+      throw resultado.error;
+    }
+
+    return { ok: true };
+  } catch (erro) {
+    console.error(
+      'Erro ao salvar pastoral ou movimento:',
+      erro
+    );
+
+    return {
+      ok: false,
+      erro: erro.message || String(erro),
+    };
+  }
+}
+
+
+// ------------------------------------------------------------
+// EXCLUIR REGISTRO E SUAS IMAGENS
+// Remove o registro do banco e depois tenta remover as imagens
+// próprias desse registro do Storage.
+// ------------------------------------------------------------
+
+export async function excluirPastoralMovimento(id) {
+  try {
+    if (!id) {
+      return {
+        ok: false,
+        erro: 'Registro não informado.',
+      };
+    }
+
+    // 1. Buscar as imagens antes da exclusão
+    const { data: registro, error: erroBusca } = await supabase
+      .from('pastorais_movimentos')
+      .select('capa, logo, galeria')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (erroBusca) throw erroBusca;
+
+    if (!registro) {
+      return {
+        ok: false,
+        erro: 'Pastoral, movimento ou grupo não encontrado.',
+      };
+    }
+
+    // 2. Reunir todas as imagens do registro
+    const imagens = [
+      registro.capa,
+      registro.logo,
+      ...(Array.isArray(registro.galeria) ? registro.galeria : []),
+    ].filter(Boolean);
+
+    // 3. Excluir o registro do banco de dados
+    const { error: erroExclusao } = await supabase
+      .from('pastorais_movimentos')
+      .delete()
+      .eq('id', id);
+
+    if (erroExclusao) throw erroExclusao;
+
+    // 4. Remover as imagens do Storage
+    // Evita tentar excluir a mesma imagem mais de uma vez.
+    const imagensUnicas = [...new Set(imagens)];
+
+    for (const imagem of imagensUnicas) {
+      const resultado = await excluirImagem(imagem);
+
+      if (!resultado.ok) {
+        console.warn(
+          'Registro excluído, mas uma imagem não pôde ser removida:',
+          resultado.erro
+        );
+      }
+    }
+
+    return { ok: true };
+  } catch (erro) {
+    console.error('Erro ao excluir pastoral ou movimento:', erro);
 
     return {
       ok: false,

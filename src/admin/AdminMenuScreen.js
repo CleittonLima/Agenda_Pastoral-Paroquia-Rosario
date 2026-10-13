@@ -86,6 +86,13 @@ const SECOES = [
     cargosPermitidos: ['PROGRAMADOR', 'PADRE'],
   },
   {
+    id: 'AdminPastorais',
+    icone: 'people-outline',
+    titulo: 'Pastorais, Movimentos e Grupos',
+    desc: 'Gerenciar pastorais, movimentos e grupos da paróquia',
+    cargosPermitidos: ['PROGRAMADOR', 'PADRE'],
+  },
+  {
     id: 'AdminMinhaConta',
     icone: 'person-circle-outline',
     titulo: 'Minha Conta',

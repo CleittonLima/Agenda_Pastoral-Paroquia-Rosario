@@ -129,7 +129,7 @@ export default function InicioScreen() {
   const nomeParoquia =
     config.nomeParoquia || 'Paróquia N. Sra. do Rosário';
 
-  const atalhos = [
+    const atalhos = [
     {
       icone: '🙏',
       rotulo: 'Oferta',
@@ -139,6 +139,11 @@ export default function InicioScreen() {
       icone: '📿',
       rotulo: 'Orações',
       onPress: () => navigation.navigate('Oracoes'),
+    },
+    {
+      icone: '👥',
+      rotulo: 'Pastorais',
+      onPress: () => navigation.navigate('Pastorais'),
     },
     {
       icone: '⚙️',

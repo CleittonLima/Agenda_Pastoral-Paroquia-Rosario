@@ -27,6 +27,7 @@ const DADOS_VAZIOS = {
   horarios: [],
   avisos: [],
   eventos: [],
+  pastoraisMovimentos: [],
   pix: null,
   config: null,
 };
@@ -285,11 +286,35 @@ export function AppProvider({ children }) {
       .map(mapearEvento)
       .sort((a, b) => new Date(a.data) - new Date(b.data));
 
+          // Pastorais, Movimentos e Grupos
+    const pastoraisMovimentos = (resposta.pastoraisMovimentos || [])
+      .filter(
+        item => String(item.Status || '').toLowerCase() === 'ativo'
+      )
+      .map(item => ({
+        id: item.ID,
+        nome: item.Nome || '',
+        categoria: item.Categoria || 'Outro',
+        categoriaPersonalizada: item.CategoriaPersonalizada || '',
+        capa: item.Capa || '',
+        lema: item.Lema || '',
+        galeria: Array.isArray(item.Galeria) ? item.Galeria : [],
+        sobre: item.Sobre || '',
+        atividades: item.Atividades || '',
+        objetivo: item.Objetivo || '',
+        diasEncontros: item.DiasEncontros || '',
+        logo: item.Logo || '',
+        whatsapp: item.WhatsApp || '',
+        textoBotaoContato: item.TextoBotaoContato || '',
+        ordem: Number(item.Ordem) || 0,
+      }))
+      .sort((a, b) => a.ordem - b.ordem);
     return {
       igrejas,
       horarios,
       avisos,
       eventos,
+      pastoraisMovimentos,
       pix: resposta.pix ? mapearPix(resposta.pix) : null,
       config: resposta.config
         ? mapearConfiguracoes(resposta.config)

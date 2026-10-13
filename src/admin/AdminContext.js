@@ -14,6 +14,7 @@ const DADOS_VAZIOS = {
   horarios: [],
   avisos: [],
   eventos: [],
+  pastoraisMovimentos: [],
   pix: {},
   config: {},
 };
@@ -89,6 +90,7 @@ export function AdminProvider({ children }) {
           horarios: resposta.horarios || [],
           avisos: resposta.avisos || [],
           eventos: resposta.eventos || [],
+          pastoraisMovimentos: resposta.pastoraisMovimentos || [],
           pix: resposta.pix || {},
           config: resposta.config || {},
         });
