@@ -15,7 +15,17 @@ import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../context/AppContext';
 
 export default function PastoralDetalhesScreen({ route, navigation }) {
-  const { temaCores, tamanhoFonte } = useApp();
+  const { temaCores, tamanhoFonte, preferencias } = useApp();
+
+  const temaEscuro = preferencias?.tema === 'escuro';
+
+  const corFundo = temaEscuro ? '#121212' : '#FFFFFF';
+  const corCartao = temaEscuro ? '#1E1E1E' : '#FFFFFF';
+  const corTexto = temaEscuro ? '#F1F1F1' : '#262626';
+  const corTextoSecundario = temaEscuro ? '#BDBDBD' : '#555555';
+  const corBorda = temaEscuro ? '#333333' : '#EEEEEE';
+  const corCapaVazia = temaEscuro ? '#252525' : '#EEEEEE';
+
   const { width: larguraTela } = useWindowDimensions();
 
   const pastoral = route.params?.pastoral;
@@ -25,13 +35,25 @@ export default function PastoralDetalhesScreen({ route, navigation }) {
 
   if (!pastoral) {
     return (
-      <View style={styles.erro}>
-        <Text style={styles.erroTexto}>
+      <View style={[styles.erro, { backgroundColor: corFundo }]}>
+        <Text
+          style={[
+            styles.erroTexto,
+            { color: corTextoSecundario },
+          ]}
+        >
           Não foi possível carregar as informações.
         </Text>
 
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.voltarTexto}>Voltar</Text>
+          <Text
+            style={[
+              styles.voltarTexto,
+              { color: temaCores.corCabecalho },
+            ]}
+          >
+            Voltar
+          </Text>
         </TouchableOpacity>
       </View>
     );
@@ -86,7 +108,12 @@ export default function PastoralDetalhesScreen({ route, navigation }) {
     }
 
     return (
-      <View style={styles.secao}>
+      <View
+        style={[
+          styles.secao,
+          { borderBottomColor: corBorda },
+        ]}
+      >
         <View style={styles.tituloSecao}>
           <Ionicons
             name={icone}
@@ -97,7 +124,10 @@ export default function PastoralDetalhesScreen({ route, navigation }) {
           <Text
             style={[
               styles.titulo,
-              { fontSize: tamanhoFonte(18) },
+              {
+                fontSize: tamanhoFonte(18),
+                color: corTexto,
+              },
             ]}
           >
             {titulo}
@@ -107,7 +137,10 @@ export default function PastoralDetalhesScreen({ route, navigation }) {
         <Text
           style={[
             styles.texto,
-            { fontSize: tamanhoFonte(15) },
+            {
+              fontSize: tamanhoFonte(15),
+              color: corTextoSecundario,
+            },
           ]}
         >
           {texto}
@@ -117,8 +150,12 @@ export default function PastoralDetalhesScreen({ route, navigation }) {
   }
 
   return (
-    <View style={styles.container}>
-
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: corFundo },
+      ]}
+    >
       {/* Botão de voltar fixo na tela */}
       <TouchableOpacity
         style={styles.botaoVoltarFixo}
@@ -130,18 +167,22 @@ export default function PastoralDetalhesScreen({ route, navigation }) {
         <Ionicons
           name="arrow-back"
           size={25}
-          color="#fff"
+          color="#FFFFFF"
         />
       </TouchableOpacity>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollConteudo}
+        contentContainerStyle={[
+          styles.scrollConteudo,
+          { backgroundColor: corFundo },
+        ]}
       >
         {/* Conteúdo centralizado no desktop */}
         <View
           style={[
             styles.conteudo,
+            { backgroundColor: corCartao },
             isDesktop && styles.conteudoDesktop,
           ]}
         >
@@ -149,6 +190,7 @@ export default function PastoralDetalhesScreen({ route, navigation }) {
           <View
             style={[
               styles.areaCapa,
+              { backgroundColor: corCapaVazia },
               isDesktop && styles.areaCapaDesktop,
             ]}
           >
@@ -157,6 +199,7 @@ export default function PastoralDetalhesScreen({ route, navigation }) {
                 source={{ uri: pastoral.capa }}
                 style={[
                   styles.capa,
+                  { backgroundColor: corCapaVazia },
                   isDesktop && styles.capaDesktop,
                 ]}
                 resizeMode="contain"
@@ -166,13 +209,14 @@ export default function PastoralDetalhesScreen({ route, navigation }) {
                 style={[
                   styles.capa,
                   styles.capaVazia,
+                  { backgroundColor: corCapaVazia },
                   isDesktop && styles.capaDesktop,
                 ]}
               >
                 <Ionicons
                   name="people-outline"
                   size={60}
-                  color="#999"
+                  color={temaEscuro ? '#777777' : '#999999'}
                 />
               </View>
             )}
@@ -184,7 +228,9 @@ export default function PastoralDetalhesScreen({ route, navigation }) {
               style={[
                 styles.categoriaContainer,
                 {
-                  backgroundColor: `${temaCores.corCabecalho}15`,
+                  backgroundColor: temaEscuro
+                    ? `${temaCores.corCabecalho}30`
+                    : `${temaCores.corCabecalho}15`,
                 },
               ]}
             >
@@ -201,7 +247,10 @@ export default function PastoralDetalhesScreen({ route, navigation }) {
             <Text
               style={[
                 styles.nome,
-                { fontSize: tamanhoFonte(isDesktop ? 30 : 27) },
+                {
+                  fontSize: tamanhoFonte(isDesktop ? 30 : 27),
+                  color: corTexto,
+                },
               ]}
             >
               {pastoral.nome}
@@ -211,7 +260,10 @@ export default function PastoralDetalhesScreen({ route, navigation }) {
               <Text
                 style={[
                   styles.lema,
-                  { fontSize: tamanhoFonte(15) },
+                  {
+                    fontSize: tamanhoFonte(15),
+                    color: corTextoSecundario,
+                  },
                 ]}
               >
                 {pastoral.lema}
@@ -249,7 +301,12 @@ export default function PastoralDetalhesScreen({ route, navigation }) {
 
           {/* Galeria de fotos */}
           {galeria.length > 0 && (
-            <View style={styles.secao}>
+            <View
+              style={[
+                styles.secao,
+                { borderBottomColor: corBorda },
+              ]}
+            >
               <View style={styles.tituloSecao}>
                 <Ionicons
                   name="images-outline"
@@ -260,7 +317,10 @@ export default function PastoralDetalhesScreen({ route, navigation }) {
                 <Text
                   style={[
                     styles.titulo,
-                    { fontSize: tamanhoFonte(18) },
+                    {
+                      fontSize: tamanhoFonte(18),
+                      color: corTexto,
+                    },
                   ]}
                 >
                   Nossa comunidade
@@ -277,6 +337,9 @@ export default function PastoralDetalhesScreen({ route, navigation }) {
                     key={`${foto}-${index}`}
                     style={[
                       styles.molduraGaleria,
+                      {
+                        backgroundColor: corCapaVazia,
+                      },
                       isDesktop && styles.molduraGaleriaDesktop,
                     ]}
                   >
@@ -310,7 +373,9 @@ export default function PastoralDetalhesScreen({ route, navigation }) {
             <TouchableOpacity
               style={[
                 styles.botaoContato,
-                { backgroundColor: temaCores.corCabecalho },
+                {
+                  backgroundColor: temaCores.corCabecalho,
+                },
                 isDesktop && styles.botaoContatoDesktop,
               ]}
               activeOpacity={0.85}
@@ -319,7 +384,7 @@ export default function PastoralDetalhesScreen({ route, navigation }) {
               <Ionicons
                 name="logo-whatsapp"
                 size={22}
-                color="#fff"
+                color="#FFFFFF"
               />
 
               <Text style={styles.textoBotaoContato}>

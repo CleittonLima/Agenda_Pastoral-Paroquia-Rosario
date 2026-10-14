@@ -20,6 +20,7 @@ const AREAS = [
   { valor: 'EVENTO', rotulo: 'Eventos' },
   { valor: 'PIX', rotulo: 'PIX' },
   { valor: 'IMAGEM', rotulo: 'Galeria' },
+  { valor: 'PASTORAL_MOVIMENTO', rotulo: 'Pastorais e Grupos' },
 ];
 
 const ACOES = [
@@ -36,6 +37,7 @@ const ICONES = {
   EVENTO: 'calendar-outline',
   PIX: 'cash-outline',
   IMAGEM: 'images-outline',
+  PASTORAL_MOVIMENTO: 'people-outline',
 };
 
 const NOMES_AREAS = {
@@ -45,6 +47,7 @@ const NOMES_AREAS = {
   EVENTO: 'Eventos',
   PIX: 'Oferta (PIX)',
   IMAGEM: 'Galeria de Fotos',
+  PASTORAL_MOVIMENTO: 'Pastorais, Movimentos e Grupos',
 };
 
 const NOMES_ACOES = {
@@ -90,21 +93,22 @@ export default function AdminHistoricoScreen() {
 
     try {
       let consulta = supabase
-        .from('historico_alteracoes')
-        .select(
-          'id, usuario_nome, usuario_cargo, acao, entidade, descricao, detalhes, created_at'
-        )
-        .in('entidade', [
-          'IGREJA',
-          'HORARIO',
-          'AVISO',
-          'EVENTO',
-          'PIX',
-          'IMAGEM',
-        ])
-        .in('acao', ['CRIAR', 'EDITAR', 'EXCLUIR'])
-        .order('created_at', { ascending: false })
-        .limit(200);
+  .from('historico_alteracoes')
+  .select(
+    'id, usuario_nome, usuario_cargo, acao, entidade, descricao, detalhes, created_at'
+  )
+  .in('entidade', [
+    'IGREJA',
+    'HORARIO',
+    'AVISO',
+    'EVENTO',
+    'PIX',
+    'IMAGEM',
+    'PASTORAL_MOVIMENTO',
+  ])
+  .in('acao', ['CRIAR', 'EDITAR', 'EXCLUIR'])
+  .order('created_at', { ascending: false })
+  .limit(200);
 
       if (areaSelecionada !== 'TODOS') {
         consulta = consulta.eq('entidade', areaSelecionada);

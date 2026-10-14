@@ -44,23 +44,31 @@ const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
 function TabNavigator() {
-  const { dados, temaCores } = useApp();
-  const totalAvisosUrgentes = dados.avisos.filter(a => a.prioridade !== 'Normal').length;
+  const { temaCores, preferencias } = useApp();
+
+  const temaEscuro = preferencias?.tema === 'escuro';
 
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
+
         tabBarActiveTintColor: temaCores.corCabecalho,
         tabBarInactiveTintColor: '#999',
+
         tabBarStyle: {
-          borderTopWidth: 0,
-          elevation: 12,
-          shadowOpacity: 0.08,
+          backgroundColor: temaEscuro ? '#1E1E1E' : '#FFFFFF',
+          borderTopColor: temaEscuro ? '#333333' : '#EEEEEE',
+          borderTopWidth: 1,
+          elevation: 8,
+          shadowOpacity: temaEscuro ? 0.3 : 0.1,
           height: 62,
-          paddingBottom: 8,
-          paddingTop: 4,
+          paddingTop: 6,
+          paddingBottom: 6,
         },
+        tabBarActiveTintColor: temaCores.corCabecalho,
+        tabBarInactiveTintColor: temaEscuro ? '#BDBDBD' : '#999999',
+
         tabBarIcon: ({ color, size, focused }) => {
           const mapa = {
             'Início': focused ? 'home' : 'home-outline',
@@ -69,37 +77,62 @@ function TabNavigator() {
             'Eventos': focused ? 'calendar' : 'calendar-outline',
             'Igrejas': focused ? 'business' : 'business-outline',
           };
-          return <Ionicons name={mapa[route.name] || 'ellipse'} size={size} color={color} />;
+
+          return (
+            <Ionicons
+              name={mapa[route.name] || 'ellipse'}
+              size={size}
+              color={color}
+            />
+          );
         },
-        tabBarBadge:
-          route.name === 'Avisos' && totalAvisosUrgentes > 0
-            ? totalAvisosUrgentes
-            : undefined,
       })}
     >
-      <Tab.Screen name="Início" component={InicioScreen} />
-      <Tab.Screen name="Horários" component={HorariosScreen} />
-      <Tab.Screen name="Avisos" component={AvisosScreen} />
-      <Tab.Screen name="Eventos" component={EventosScreen} />
-      <Tab.Screen name="Igrejas" component={IgrejasScreen} />
+      <Tab.Screen
+        name="Início"
+        component={InicioScreen}
+      />
+
+      <Tab.Screen
+        name="Horários"
+        component={HorariosScreen}
+      />
+
+      <Tab.Screen
+        name="Avisos"
+        component={AvisosScreen}
+      />
+
+      <Tab.Screen
+        name="Eventos"
+        component={EventosScreen}
+      />
+
+      <Tab.Screen
+        name="Igrejas"
+        component={IgrejasScreen}
+      />
     </Tab.Navigator>
   );
 }
 
 function AppRoot() {
   const { carregando, usuario, temaCores } = useApp();
+
   const [primeiroAcesso, setPrimeiroAcesso] = useState(null);
-const [mostrarBoasVindas, setMostrarBoasVindas] = useState(true);
+  const [mostrarBoasVindas, setMostrarBoasVindas] = useState(true);
 
   useEffect(() => {
     async function verificar() {
       const u = await AsyncStorage.getItem('@paroquia_usuario');
       setPrimeiroAcesso(!u);
     }
+
     verificar();
   }, []);
 
   let conteudo;
+
   if (primeiroAcesso === null || carregando) {
     conteudo = <LoadingScreen />;
   } else if (mostrarBoasVindas) {
@@ -111,45 +144,133 @@ const [mostrarBoasVindas, setMostrarBoasVindas] = useState(true);
     );
   } else {
     conteudo = (
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator
+        screenOptions={{ headerShown: false }}
+      >
         {/* ---- App público (fiéis) ---- */}
-      <Stack.Screen name="Principal" component={TabNavigator} />
-      <Stack.Screen name="Oferta" component={OfertaScreen} />
-      <Stack.Screen name="Oracoes" component={OracoesScreen} />
-      <Stack.Screen name="Configuracoes" component={ConfiguracoesScreen} />
-      <Stack.Screen
-        name="Pastorais"
-        component={PastoraisScreen}
-      />
-<Stack.Screen
-  name="PastoralDetalhes"
-  component={PastoralDetalhesScreen}
-/>
 
-        {/* ---- Painel Administrativo (coordenador) ---- */}
-        <Stack.Screen name="AdminLogin" component={AdminLoginScreen} />
-        <Stack.Screen name="AdminMenu" component={AdminMenuScreen} />
-        <Stack.Screen name="AdminMinhaConta" component={AdminMinhaContaScreen} />
-        <Stack.Screen name="AdminUsuarios" component={AdminUsuariosScreen} />
-        <Stack.Screen name="AdminIgrejas" component={AdminIgrejasScreen} />
-        <Stack.Screen name="AdminHorarios" component={AdminHorariosScreen} />
-        <Stack.Screen name="AdminAvisos" component={AdminAvisosScreen} />
-        <Stack.Screen name="AdminEventos" component={AdminEventosScreen} />
-        <Stack.Screen name="AdminHistorico" component={AdminHistoricoScreen} />
-        <Stack.Screen name="AdminPix" component={AdminPixScreen} />
-        <Stack.Screen name="AdminGaleria" component={AdminGaleriaScreen} />
-        <Stack.Screen name="AdminRedesSociais" component={AdminRedesSociaisScreen} />
-        <Stack.Screen name="AdminConfiguracoes" component={AdminConfiguracoesScreen} />
-        <Stack.Screen name="AdminPdf" component={AdminPdfScreen} />
-        <Stack.Screen name="AdminOracoes" component={AdminOracoesScreen} />
-        <Stack.Screen name="AdminPastorais" component={AdminPastoraisScreen} />
+        <Stack.Screen
+          name="Principal"
+          component={TabNavigator}
+        />
+
+        <Stack.Screen
+          name="Oferta"
+          component={OfertaScreen}
+        />
+
+        <Stack.Screen
+          name="Oracoes"
+          component={OracoesScreen}
+        />
+
+        <Stack.Screen
+          name="Configuracoes"
+          component={ConfiguracoesScreen}
+        />
+
+        <Stack.Screen
+          name="Pastorais"
+          component={PastoraisScreen}
+        />
+
+        <Stack.Screen
+          name="PastoralDetalhes"
+          component={PastoralDetalhesScreen}
+        />
+
+        {/* ---- Painel Administrativo ---- */}
+
+        <Stack.Screen
+          name="AdminLogin"
+          component={AdminLoginScreen}
+        />
+
+        <Stack.Screen
+          name="AdminMenu"
+          component={AdminMenuScreen}
+        />
+
+        <Stack.Screen
+          name="AdminMinhaConta"
+          component={AdminMinhaContaScreen}
+        />
+
+        <Stack.Screen
+          name="AdminUsuarios"
+          component={AdminUsuariosScreen}
+        />
+
+        <Stack.Screen
+          name="AdminIgrejas"
+          component={AdminIgrejasScreen}
+        />
+
+        <Stack.Screen
+          name="AdminHorarios"
+          component={AdminHorariosScreen}
+        />
+
+        <Stack.Screen
+          name="AdminAvisos"
+          component={AdminAvisosScreen}
+        />
+
+        <Stack.Screen
+          name="AdminEventos"
+          component={AdminEventosScreen}
+        />
+
+        <Stack.Screen
+          name="AdminHistorico"
+          component={AdminHistoricoScreen}
+        />
+
+        <Stack.Screen
+          name="AdminPix"
+          component={AdminPixScreen}
+        />
+
+        <Stack.Screen
+          name="AdminGaleria"
+          component={AdminGaleriaScreen}
+        />
+
+        <Stack.Screen
+          name="AdminRedesSociais"
+          component={AdminRedesSociaisScreen}
+        />
+
+        <Stack.Screen
+          name="AdminConfiguracoes"
+          component={AdminConfiguracoesScreen}
+        />
+
+        <Stack.Screen
+          name="AdminPdf"
+          component={AdminPdfScreen}
+        />
+
+        <Stack.Screen
+          name="AdminOracoes"
+          component={AdminOracoesScreen}
+        />
+
+        <Stack.Screen
+          name="AdminPastorais"
+          component={AdminPastoraisScreen}
+        />
       </Stack.Navigator>
     );
   }
 
   return (
     <>
-      <StatusBar style="light" backgroundColor={temaCores.corCabecalho} />
+      <StatusBar
+        style="light"
+        backgroundColor={temaCores.corCabecalho}
+      />
+
       {conteudo}
     </>
   );
