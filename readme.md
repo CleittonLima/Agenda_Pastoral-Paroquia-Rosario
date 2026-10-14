@@ -1,300 +1,381 @@
-# Paróquia Nossa Senhora do Rosário — App Mobile (React Native)
+# Paróquia Nossa Senhora do Rosário --- Aplicativo Mobile
 
-Aplicativo mobile da Paróquia Nossa Senhora do Rosário (Serra Talhada - PE),
-desenvolvido em **React Native + Expo**. Conversão do site web original
-(HTML/CSS/JS) para a disciplina de Mobile da faculdade.
+Aplicativo da **Paróquia Nossa Senhora do Rosário**, em Serra
+Talhada--PE, desenvolvido com **React Native + Expo**. O projeto evolui
+o site web original para uma experiência mobile.
 
-O app permite aos fiéis consultar horários de missas e confissões, avisos da
-paróquia, eventos, informações das igrejas/capelas, fazer ofertas via PIX e
-acompanhar orações e o Santo Terço — tudo sincronizado com uma planilha do
-Google Sheets. Também possui um **Painel Administrativo completo**, acessado
-de dentro do próprio app, onde o coordenador da paróquia cadastra, edita e
-remove tudo isso sem precisar mexer em código.
+O aplicativo permite consultar horários de missas e confissões, avisos,
+eventos, igrejas e capelas, ofertas via PIX, orações e o Santo Terço.
+Também inclui um **Painel Administrativo** para usuários autorizados
+gerenciarem os dados sem editar o código-fonte.
 
----
+> **Status:** o projeto possui configuração de build Android pelo EAS
+> Build. A publicação para iOS/App Store ainda exige preparação
+> específica, conta Apple Developer e aprovação da Apple.
+
+------------------------------------------------------------------------
 
 ## 👥 Colaboradores
 
-- **Cleiton Lima** — desenvolvimento
-- **João Vitor Lima** — colaborador — [github.com/jvitor-lima](https://github.com/jvitor-lima)
+-   **Cleiton Lima** --- desenvolvimento
+-   **João Vitor Lima** --- colaborador ---
+    [github.com/jvitor-lima](https://github.com/jvitor-lima)
 
----
+------------------------------------------------------------------------
 
-## 📱 Sobre o projeto
+## 📱 Funcionalidades
 
-### Área pública (fiéis)
+### Área pública
 
-- **Início** — imagem e nome da paróquia, e um resumo com a próxima
-  celebração, próxima confissão e próximo evento, calculados
-  automaticamente a partir dos horários cadastrados.
-- **Horários** — missas, confissões e demais celebrações, com filtro por
-  igreja. A data é sempre calculada a partir do dia da semana cadastrado,
-  então nunca fica desatualizada.
-- **Avisos** — comunicados da paróquia, com destaque para os
-  urgentes/importantes. Avisos vencidos somem sozinhos.
-- **Eventos** — programação especial (festas, retiros, novenas etc.).
-- **Igrejas** — cada igreja/capela, com foto de capa, endereço, WhatsApp,
-  Google Maps e um card de "Rede social oficial da paróquia" (Instagram,
-  WhatsApp, Facebook, YouTube, Site, Drive).
-- **Oferta (PIX)** — QR Code e chave PIX, com botão de copiar.
-- **Orações** — orações do dia a dia (Pai-Nosso, Ave-Maria, orações de
-  santos etc.) e a seção "Como rezar o Santo Terço", com um terço
-  interativo passo a passo (barra de progresso, Anterior/Próximo,
-  mistério do dia calculado automaticamente).
-- **Configurações** — nome/apelido, avatar, temas visuais (Marianos,
-  Santos, Litúrgicos...), acessibilidade, e o acesso ao Painel
-  Administrativo.
-- Funciona **offline**: os últimos dados recebidos ficam salvos no
-  aparelho e aparecem automaticamente se não houver internet.
+-   **Início:** resumo das próximas celebrações, confissões e eventos,
+    com base nos dados cadastrados.
+-   **Horários:** consulta de missas, confissões e outras celebrações,
+    com filtro por igreja.
+-   **Avisos:** comunicados paroquiais, incluindo destaque para avisos
+    importantes.
+-   **Eventos:** programação especial, como festas, retiros e novenas.
+-   **Igrejas e capelas:** fotos, endereços, contatos e links de
+    localização e redes sociais, quando cadastrados.
+-   **Oferta via PIX:** exibição do QR Code e da chave PIX, com opção de
+    copiar.
+-   **Orações:** orações católicas e Santo Terço passo a passo, com
+    progresso, navegação entre etapas e mistérios do dia.
+-   **Configurações:** nome/apelido, avatar, temas visuais e opções de
+    acessibilidade, além do acesso ao painel administrativo.
+-   **Cache/offline:** dados previamente recebidos podem permanecer
+    disponíveis localmente, conforme os recursos implementados em cada
+    tela.
+-   **Atualização das listas públicas:** o gesto de puxar para atualizar
+    foi removido das telas Horários, Avisos, Eventos e Igrejas. As telas
+    administrativas mantêm seus próprios recursos de atualização.
 
-### Painel Administrativo (coordenador)
+### Painel Administrativo
 
-Acessado por senha, dentro do app (Configurações → Acesso do Coordenador).
-Permite:
+O painel é acessado dentro do aplicativo por usuários autorizados. As
+permissões disponíveis dependem do cargo atribuído à conta.
 
-- **Área Pastoral** — cadastrar/editar/excluir igrejas
-- **Horários, Avisos, Eventos** — CRUD completo, agrupado por igreja
-- **Oferta (PIX)** — QR Code (upload direto da galeria do celular), chave,
-  banco etc.
-- **Galeria** — adicionar/remover fotos de cada igreja
-- **Redes Sociais** — Instagram, WhatsApp, Facebook, YouTube, Site, Drive,
-  e a imagem/nome do card de "Rede social oficial"
-- **Configurações Gerais** — dados da paróquia, logo, imagem inicial, e
-  troca da própria senha do painel
-- Upload de imagens envia direto para o Google Drive (via Apps Script) e
-  salva a URL na planilha
+-   **Área Pastoral:** cadastrar, editar e excluir igrejas e capelas.
+-   **Horários, Avisos e Eventos:** gerenciamento dos registros.
+-   **Oferta (PIX):** manutenção das informações e do QR Code.
+-   **Galeria:** gerenciamento de fotos relacionadas às igrejas.
+-   **Redes Sociais:** manutenção dos links e informações apresentados
+    ao público.
+-   **Configurações gerais:** gerenciamento de informações e imagens
+    institucionais.
+-   **Histórico de alterações:** consulta às alterações administrativas,
+    conforme as permissões disponíveis.
+-   **Navegação de retorno:** o botão **INÍCIO** volta à área pública
+    sem acionar a opção **SAIR**. O botão **SAIR** continua destinado ao
+    encerramento da sessão.
 
-### Tecnologias usadas
+### Cadastro e edição de igrejas
 
-| Camada | Tecnologia |
-|---|---|
-| Aplicativo | React Native + Expo |
-| Navegação | React Navigation (bottom tabs + native stack) |
-| Dados locais/offline | AsyncStorage |
-| Seleção de imagens | expo-image-picker |
-| Cópia para área de transferência | expo-clipboard |
-| Leitura de arquivo para upload | expo-file-system |
-| Backend/API | Google Apps Script |
-| Banco de dados | Google Sheets |
+-   Seletor visual para a **cor de identificação**.
+-   Pré-visualização da cor escolhida.
+-   Campo hexadecimal para informar uma cor manualmente, por exemplo
+    `#7A1F2B`.
+-   O seletor é integrado ao formulário genérico e usado no cadastro e
+    na edição de igrejas.
 
----
+### Interface
+
+-   Ícone do aplicativo configurado com o brasão da paróquia,
+    centralizado em fundo branco.
+-   Nome exibido do aplicativo: **N. Sra. do Rosário**.
+-   Modal do Santo Terço com opções para continuar de onde parou ou
+    começar novamente.
+-   Interface responsiva para os ambientes suportados pelo projeto.
+
+------------------------------------------------------------------------
+
+## 🧰 Tecnologias
+
+  Camada/recurso                  Tecnologia
+  ------------------------------- -----------------------------------------------
+  Aplicativo                      React Native + Expo
+  Navegação                       React Navigation (bottom tabs e native stack)
+  Dados locais                    AsyncStorage
+  Ícones                          `@expo/vector-icons`
+  Seleção e exibição de imagens   `expo-image-picker`, `expo-image`
+  Compartilhamento                `expo-sharing`
+  Área de transferência           `expo-clipboard`
+  Arquivos e impressão            `expo-file-system`, `expo-print`
+  Seletor visual de cores         `react-native-wheel-color-picker`
+  Build para lojas                EAS Build / EAS Submit
+
+Consulte `package.json` e os arquivos em `src/api/` para conferir as
+dependências e integrações de dados efetivamente utilizadas.
+
+------------------------------------------------------------------------
 
 ## ✅ Pré-requisitos
 
-Antes de rodar o projeto, instale na sua máquina:
+1.  **Node.js** --- preferencialmente uma versão compatível com o
+    projeto. Verifique com `node --version` e `npm --version`. Site:
+    [nodejs.org](https://nodejs.org).
+2.  **Git** --- [git-scm.com](https://git-scm.com).
+3.  **VS Code** ou outro editor ---
+    [code.visualstudio.com](https://code.visualstudio.com).
+4.  Uma conta Expo para utilizar o EAS Build ---
+    [expo.dev](https://expo.dev).
 
-1. **Node.js** (versão LTS) — [nodejs.org](https://nodejs.org)
-   ```bash
-   node --version
-   npm --version
-   ```
-2. **Git** — [git-scm.com](https://git-scm.com)
-3. **VSCode** (ou outro editor) — [code.visualstudio.com](https://code.visualstudio.com)
-4. **App Expo Go** no celular, para testar no aparelho físico:
-   - Android: [Play Store](https://play.google.com/store/apps/details?id=host.exp.exponent)
-   - iPhone: [App Store](https://apps.apple.com/app/expo-go/id982107779)
+Não é necessário instalar Android Studio ou Xcode para executar a versão
+Web. O EAS Build também permite compilar aplicativos nativos na nuvem.
 
-Não é necessário instalar Android Studio ou Xcode só para rodar via Expo Go
-ou no modo Web.
+------------------------------------------------------------------------
 
----
+## ⬇️ Instalar o projeto
 
-## ⬇️ Como baixar e instalar o projeto
-
-```bash
+``` bash
 # 1. Clone o repositório
 git clone https://github.com/SEU-USUARIO/NOME-DO-REPOSITORIO.git
 
-# 2. Entre na pasta do projeto
+# 2. Entre na pasta
 cd NOME-DO-REPOSITORIO
 
 # 3. Instale as dependências
 npm install
 ```
 
-Se o `npm install` não resolver tudo direito (algumas libs do Expo
-precisam de versões específicas), rode também:
+Substitua `SEU-USUARIO/NOME-DO-REPOSITORIO` pelo endereço real do
+repositório. Depois, confira as dependências do Expo:
 
-```bash
-npx expo install
+``` bash
+npx expo install --check
 ```
 
-### Se for a primeira vez que alguém (ex.: o professor) roda o projeto
+------------------------------------------------------------------------
 
-Além do `npm install`, confirme que estas dependências específicas do
-Expo estão instaladas — normalmente já vêm do `package.json`, mas se
-faltar alguma, instale com o comando abaixo:
+## ▶️ Executar o projeto
 
-```bash
-npx expo install @react-navigation/native @react-navigation/bottom-tabs @react-navigation/native-stack react-native-screens react-native-safe-area-context @react-native-async-storage/async-storage @expo/vector-icons expo-file-system expo-clipboard expo-image-picker
-```
+### Versão Web
 
----
-
-## ▶️ Como rodar o projeto
-
-### Rodar no navegador (mais rápido para conferir telas)
-
-```bash
-npm start
-```
-ou
-```bash
+``` bash
 npx expo start
 ```
 
-Depois, no terminal, aperte **`w`** para abrir a versão Web no navegador.
-É a forma mais rápida de conferir as telas sem precisar de celular.
+Quando o servidor iniciar, pressione **`w`** no terminal para abrir a
+versão Web.
 
-### Rodar no celular pelo Expo Go
+### Testar no celular com Expo Go
 
-```bash
+``` bash
 npx expo start
 ```
 
-Isso abre um **QR Code**. Abra o app **Expo Go** no celular e escaneie.
+Escaneie o QR Code pelo Expo Go. Normalmente, computador e celular
+precisam estar na mesma rede Wi-Fi. A compatibilidade depende da versão
+do Expo Go e das dependências utilizadas.
 
-**Importante:** o computador e o celular precisam estar na **mesma rede
-Wi-Fi**.
+Se a conexão pela rede local falhar, tente:
 
-### Se o QR Code não conectar (tela azul de erro / não carrega)
-
-Costuma ser o celular e o PC não conseguindo "se enxergar" na rede (comum
-em Wi-Fi de faculdade ou firewall bloqueando). Tente, nesta ordem:
-
-```bash
-npx expo start --lan
-```
-Se ainda não funcionar, libere o Node.js no Firewall do Windows (ao rodar
-`npx expo start` a primeira vez, o Windows deve perguntar se permite
-acesso — clique em **Permitir**). Se nada disso resolver, use o modo túnel
-(mais lento, mas funciona em redes restritas):
-```bash
+``` bash
 npx expo start --tunnel
 ```
 
----
+Se o Expo Go não for compatível com alguma dependência nativa ou com a
+versão do projeto, utilize um build de desenvolvimento ou um APK gerado
+pelo EAS Build.
 
-## 🔐 Acessando o Painel Administrativo
+------------------------------------------------------------------------
 
-1. Abra o app normalmente (Web, Expo Go ou APK instalado)
-2. Vá em **Configurações → Acesso do Coordenador**
-3. Digite a senha do painel (a mesma cadastrada na aba **Administracao**
-   da planilha do Google Sheets)
-4. Dentro do painel, é possível **trocar a senha** em Configurações
-   Gerais, a qualquer momento
+## 🔐 Acessar o Painel Administrativo
 
----
+1.  Abra o aplicativo.
+2.  Entre em **Configurações → Acesso do Coordenador**.
+3.  Faça login com uma conta administrativa autorizada.
+4.  Utilize as seções disponíveis conforme as permissões atribuídas.
 
-## 🔌 Configurando a API (Google Apps Script)
+O botão **INÍCIO** no cabeçalho retorna à área pública sem executar a
+ação de saída. Para encerrar a sessão, utilize **SAIR** e confirme a
+operação.
 
-O app se conecta à mesma planilha/API usada pelo backend em Google Apps
-Script. A URL fica em:
+------------------------------------------------------------------------
 
-```
-src/api/api.js
-```
+## 🎨 Seletor de cores das igrejas
 
-na constante `URL_API`, no topo do arquivo. Se a URL do Apps Script mudar
-no futuro (nova publicação, por exemplo), basta atualizar essa linha.
+O campo **Cor de identificação** permite selecionar uma cor visualmente
+ou informar o código hexadecimal. Exemplo: `#7A1F2B`.
 
----
+O seletor está integrado a `src/admin/components/CampoFormulario.js` e é
+usado pelos formulários que declaram `tipo: 'color'`. A biblioteca
+utilizada é `react-native-wheel-color-picker`.
 
-## 📦 Gerando o APK (para instalar direto no celular)
+Arquivos relacionados: - `src/admin/components/CampoFormulario.js` -
+`src/admin/AdminIgrejasScreen.js` - `package.json`
 
-O projeto usa **EAS Build** (serviço da própria Expo) para compilar o
-`.apk`. Passo a passo resumido:
+------------------------------------------------------------------------
 
-```bash
-# 1. Instalar a CLI (uma vez só, globalmente)
+## 📦 Gerar o APK Android
+
+O projeto utiliza **EAS Build**, serviço de compilação na nuvem da Expo.
+
+### 1. Instalar e acessar o EAS CLI
+
+``` bash
 npm install -g eas-cli
-
-# 2. Login (crie uma conta gratuita em expo.dev antes, se não tiver)
 eas login
-
-# 3. Conectar o projeto (o ID já está salvo em app.json > extra > eas > projectId)
-eas build:configure
 ```
 
-Depois, confirme que o arquivo **`eas.json`** (na raiz do projeto) tem o
-perfil `preview` configurado para gerar `.apk` (e não `.aab`, que é só
-para lojas de aplicativo):
+Entre com a conta Expo vinculada ao projeto.
 
-```json
+### 2. Conferir o perfil de build
+
+O arquivo `eas.json`, na raiz do projeto, deve conter um perfil
+`preview` com distribuição interna e `android.buildType` definido como
+`apk`. Preserve as configurações existentes ao editar o arquivo.
+
+Exemplo do perfil:
+
+``` json
 {
-  "cli": { "version": ">= 5.0.0" },
   "build": {
-    "development": { "developmentClient": true, "distribution": "internal" },
     "preview": {
       "distribution": "internal",
-      "android": { "buildType": "apk" }
-    },
-    "production": { "autoIncrement": true }
+      "android": {
+        "buildType": "apk"
+      }
+    }
   }
 }
 ```
 
-Depois é só rodar:
+### 3. Validar antes da compilação
 
-```bash
+``` bash
+npx expo install --check
+npx expo-doctor
+npx expo export --platform android
+```
+
+Esses comandos verificam dependências, configuração e exportação
+JavaScript; não geram o APK.
+
+### 4. Compilar
+
+``` bash
 eas build --platform android --profile preview
 ```
 
-O build roda na nuvem da Expo (10–20 minutos). Ao terminar, o terminal
-mostra um link de download do `.apk` — também disponível em
-**expo.dev → seu projeto → Builds**. Basta transferir esse arquivo para o
-celular e instalar (autorizando "instalar de fontes desconhecidas", se
-pedido).
+Ao finalizar, o EAS disponibilizará um link para baixar o APK. Abra o
+link no dispositivo Android e siga as instruções do sistema para
+instalar o aplicativo.
 
----
+O tempo de compilação varia conforme a fila e o serviço.
+
+------------------------------------------------------------------------
+
+## 🍎 Preparação para iOS e App Store
+
+O projeto utiliza React Native + Expo e pode ser preparado para uma
+compilação iOS com EAS Build. **A publicação para iOS ainda depende de
+configuração, testes e aprovação da Apple.**
+
+Antes de compilar, será necessário:
+
+1.  Definir um identificador iOS exclusivo na configuração Expo, por
+    meio de `ios.bundleIdentifier`.
+2.  Conferir ícone, nome, permissões e compatibilidade das dependências
+    com iOS.
+3.  Configurar as credenciais e a assinatura exigidas pela Apple.
+4.  Para distribuição pública pela App Store, ter uma conta ativa no
+    **Apple Developer Program**.
+5.  Configurar o app no App Store Connect e preparar descrição, capturas
+    de tela, informações de privacidade e classificação etária.
+6.  Gerar o build iOS com EAS Build, enviar ao App Store Connect e
+    submetê-lo à revisão da Apple.
+
+A compilação pode ser realizada na nuvem, sem instalar o Xcode no
+computador Windows. A publicação depende das exigências e da aprovação
+da Apple.
+
+Documentação oficial: - [EAS
+Build](https://docs.expo.dev/build/introduction/) - [EAS
+Submit](https://docs.expo.dev/submit/introduction/) - [Apple Developer
+Program](https://developer.apple.com/programs/)
+
+------------------------------------------------------------------------
 
 ## 📂 Estrutura do projeto
 
-```
-├── App.js                     → Ponto de entrada, navegação principal
-├── eas.json                   → Configuração de build (EAS)
-├── src/
-│   ├── api/
-│   │   └── api.js             → Comunicação com a API (Google Apps Script)
-│   ├── context/
-│   │   └── AppContext.js      → Estado global do app público (dados, usuário, tema, cache offline)
-│   ├── admin/                 → Painel Administrativo completo
-│   │   ├── AdminContext.js    → Sessão (senha) e dados administrativos
-│   │   ├── AdminLoginScreen.js
-│   │   ├── AdminMenuScreen.js
-│   │   ├── Admin*.js          → Uma tela por seção (Igrejas, Horários, Avisos, Eventos, PIX, Galeria, Redes Sociais, Configurações)
-│   │   └── components/        → CampoFormulario, SeletorOpcoes, AdminCrudScreen (genérico), ConfirmModal, AdminHeader
-│   ├── data/
-│   │   ├── avatares.js        → Lista de avatares disponíveis
-│   │   └── oracoes.js         → Orações, terços e mistérios
-│   ├── screens/                → Telas públicas (Início, Horários, Avisos, Eventos, Igrejas, Oferta, Orações, Configurações)
-│   ├── components/             → Componentes reutilizáveis (cabeçalho, filtro por igreja, tela de carregamento)
-│   └── utils/
-│       └── datas.js           → Funções de data (cálculo de dia da semana, formatação etc.)
-├── assets/                     → Imagens fixas do app (avatares, logos, ícone do app)
-└── package.json
+``` text
+├── App.js
+├── app.json
+├── eas.json
+├── package.json
+├── assets/
+│   ├── avatares/
+│   └── logos/
+└── src/
+    ├── api/
+    ├── context/
+    ├── admin/
+    │   ├── AdminContext.js
+    │   ├── AdminLoginScreen.js
+    │   ├── AdminMenuScreen.js
+    │   └── components/
+    │       ├── CampoFormulario.js
+    │       ├── AdminCrudScreen.js
+    │       ├── ConfirmModal.js
+    │       └── ...
+    ├── data/
+    ├── screens/
+    ├── components/
+    └── utils/
 ```
 
----
+A estrutura acima é resumida. Consulte os arquivos do repositório para
+ver todos os módulos.
+
+------------------------------------------------------------------------
 
 ## 🐛 Problemas comuns
 
-| Sintoma | Provável causa | Solução |
-|---|---|---|
-| Tela azul de erro ao abrir no Expo Go | Celular e PC em redes diferentes | Usar `--lan` ou `--tunnel` (veja acima) |
-| `Unable to resolve module .../assets/...` | Arquivo de imagem não existe no caminho esperado | Conferir se o arquivo está na pasta certa com o nome exato |
-| `Unable to resolve "nome-do-pacote"` | Dependência não instalada | `npx expo install nome-do-pacote` |
-| Confirmação (Excluir/Sair) não funciona no modo Web | `Alert.alert` com múltiplos botões não é bem suportado no navegador | Já corrigido no projeto com modais de confirmação próprios |
-| Upload de imagem falha só no modo Web | `expo-file-system` não lê URIs `blob:` do navegador | Já corrigido no projeto (usa `fetch`+`FileReader` no Web) |
-| Ícone do Expo aparece em vez do ícone da paróquia no APK | `icon`/`adaptiveIcon` não configurados em `app.json` | Configurar os caminhos das imagens e gerar um novo build |
-| App abre e fecha sozinho no APK (mas funciona no Expo Go) | Geralmente falta algum plugin/permissão em `app.json`, ou versão de lib incompatível | Ver o erro exato com `adb logcat *:E` (celular conectado via USB, com Depuração USB ativada) enquanto o app crasha |
-| `Invalid UUID appId` ao rodar `eas init` | ID do projeto copiado incompleto | Copiar o ID completo em expo.dev → projeto → Project settings |
+  ------------------------------------------------------------------------
+  Sintoma                             O que verificar
+  ----------------------------------- ------------------------------------
+  QR Code não conecta                 Confirme que os dispositivos estão
+                                      na mesma rede e tente
+                                      `npx expo start --tunnel`.
 
----
+  `Unable to resolve module`          Verifique o nome da dependência, os
+                                      imports e execute `npm install` se
+                                      necessário.
 
-## 📄 Licença / Uso
+  Imagem não aparece                  Confira o caminho, o nome do arquivo
+                                      e a extensão.
+
+  Build falha                         Leia o log completo do EAS Build e
+                                      confira as versões e configurações
+                                      indicadas no erro.
+
+  Seletor de cores não aparece ou não Confira a instalação de
+  responde                            `react-native-wheel-color-picker`, o
+                                      bloco `campo.tipo === 'color'` e os
+                                      logs da plataforma.
+
+  Ícone padrão do Expo aparece        Confira `icon` e
+                                      `android.adaptiveIcon` em `app.json`
+                                      e gere um novo build.
+
+  Aplicativo fecha ao abrir           Consulte os logs do dispositivo e
+                                      confira dependências nativas e
+                                      configuração Expo.
+
+  Build iOS não inicia                Confira `ios.bundleIdentifier`, a
+                                      conta Expo, as credenciais Apple e
+                                      as configurações de assinatura.
+  ------------------------------------------------------------------------
+
+Antes de atualizar dependências em massa, faça uma cópia ou commit das
+alterações e leia os avisos do npm. Evite atualizações forçadas sem
+verificar possíveis incompatibilidades.
+
+------------------------------------------------------------------------
+
+## 📄 Licença e uso
 
 Projeto acadêmico desenvolvido para fins de avaliação na disciplina de
-Mobile. Os dados reais da Paróquia Nossa Senhora do Rosário são utilizados
-com autorização, para fins de demonstração prática do sistema já usado
-pela paróquia.
+Mobile. Os dados reais da Paróquia Nossa Senhora do Rosário são
+utilizados com autorização para demonstração prática do sistema
+utilizado pela paróquia.
