@@ -1056,7 +1056,15 @@ useEffect(() => {
               onPress={continuarTerco}
             >
               <Text
-                style={styles.botaoPrimarioTexto}
+                style={[
+                  styles.botaoPrimarioTexto,
+                  {
+                    color: '#FFFFFF',
+                    opacity: 1,
+                    includeFontPadding: false,
+                    textAlign: 'center',
+                  },
+                ]}
               >
                 Continuar de onde parei
               </Text>
@@ -1077,8 +1085,10 @@ useEffect(() => {
                 style={[
                   styles.botaoSecundarioTexto,
                   {
-                    color:
-                      temaCores.corTexto,
+                    color: temaCores.corTexto,
+                    opacity: 1,
+                    includeFontPadding: false,
+                    textAlign: 'center',
                   },
                 ]}
               >
@@ -1828,9 +1838,12 @@ const styles = StyleSheet.create({
   },
 
   botaoPrimarioTexto: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontWeight: '700',
     fontSize: 14,
+    textAlign: 'center',
+    includeFontPadding: false,
+    opacity: 1,
   },
 
   botaoSecundario: {
@@ -1846,6 +1859,9 @@ const styles = StyleSheet.create({
     color: '#2b2320',
     fontWeight: '700',
     fontSize: 14,
+    textAlign: 'center',
+    includeFontPadding: false,
+    opacity: 1,
   },
 
   botaoDesabilitado: {

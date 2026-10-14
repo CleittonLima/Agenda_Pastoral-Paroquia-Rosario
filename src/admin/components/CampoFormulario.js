@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ColorPicker from 'react-native-wheel-color-picker';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { enviarImagem } from '../../api/api';
 import SeletorOpcoes from './SeletorOpcoes';
@@ -126,22 +127,87 @@ export default function CampoFormulario({ campo, valor, onMudar, igrejas }) {
   }
 
   if (campo.tipo === 'color') {
-    return (
-      <View style={styles.grupo}>
-        <Text style={styles.rotulo}>{campo.rotulo}</Text>
-        <View style={styles.corLinha}>
-          <View style={[styles.corPreview, { backgroundColor: valor || '#7A1F2B' }]} />
-          <TextInput
-            style={[styles.input, { flex: 1 }]}
-            value={valor || ''}
-            onChangeText={onMudar}
-            placeholder="#7A1F2B"
-            autoCapitalize="none"
-          />
+  const corAtual =
+    /^#[0-9A-Fa-f]{6}$/.test(valor || '')
+      ? valor
+      : '#7A1F2B';
+
+  return (
+    <View style={styles.grupo}>
+      <Text style={styles.rotulo}>
+        {campo.rotulo}
+      </Text>
+
+      {/* Pré-visualização da cor selecionada */}
+      <View style={styles.corCabecalho}>
+        <View
+          style={[
+            styles.corPreview,
+            { backgroundColor: corAtual },
+          ]}
+        />
+
+        <View style={styles.corInformacoes}>
+          <Text style={styles.corTexto}>
+            Cor selecionada
+          </Text>
+
+          <Text style={styles.corCodigo}>
+            {corAtual.toUpperCase()}
+          </Text>
         </View>
       </View>
-    );
-  }
+
+      {/* Seletor visual */}
+      <View style={styles.seletorCorContainer}>
+        <ColorPicker
+          key="seletor-cor-igreja"
+          color={corAtual}
+          onColorChange={(cor) => {
+            if (/^#[0-9A-Fa-f]{6}$/.test(cor)) {
+              onMudar(cor.toUpperCase());
+            }
+          }}
+          onColorChangeComplete={(cor) => {
+            if (/^#[0-9A-Fa-f]{6}$/.test(cor)) {
+              onMudar(cor.toUpperCase());
+            }
+          }}
+          thumbSize={24}
+          sliderSize={20}
+          noSnap
+          row={false}
+          swatches
+          swatchesLast
+          useNativeDriver={false}
+          useNativeLayout={false}
+        />
+      </View>
+
+      {/* Campo hexadecimal manual */}
+      <Text style={styles.corLegenda}>
+        Ou digite o código hexadecimal:
+      </Text>
+
+      <View style={styles.corLinha}>
+        <TextInput
+          style={[styles.input, { flex: 1 }]}
+          value={valor || ''}
+          onChangeText={onMudar}
+          placeholder="#7A1F2B"
+          autoCapitalize="characters"
+          autoCorrect={false}
+          maxLength={7}
+        />
+      </View>
+
+      <Text style={styles.dicaCor}>
+        Escolha uma cor na roda, ajuste a luminosidade
+        ou informe diretamente o código hexadecimal.
+      </Text>
+    </View>
+  );
+}
 
   // text, url, number (campo simples de texto) — date e time usam o CampoDataHora acima
   const placeholders = { date: 'AAAA-MM-DD', time: 'HH:MM' };
@@ -180,4 +246,56 @@ const styles = StyleSheet.create({
   dicaImagem: { fontSize: 11, color: '#8a7d6f', marginTop: 6 },
   corLinha: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   corPreview: { width: 40, height: 40, borderRadius: 10, borderWidth: 1, borderColor: '#e3ddd2' },
+    corCabecalho: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 14,
+    padding: 12,
+    backgroundColor: '#FAF7F2',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e3ddd2',
+  },
+
+  corInformacoes: {
+    flex: 1,
+  },
+
+  corTexto: {
+    fontSize: 13,
+    color: '#5a5048',
+    marginBottom: 4,
+  },
+
+  corCodigo: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#2b2320',
+  },
+
+  seletorCorContainer: {
+    height: 310,
+    padding: 8,
+    marginBottom: 12,
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#e3ddd2',
+  },
+
+  corLegenda: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#5a5048',
+    marginBottom: 6,
+  },
+
+  dicaCor: {
+    fontSize: 11,
+    color: '#8a7d6f',
+    marginTop: 6,
+    lineHeight: 16,
+  },
+
 });

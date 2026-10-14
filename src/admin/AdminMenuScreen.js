@@ -167,6 +167,24 @@ export default function AdminMenuScreen() {
         </View>
 
         <TouchableOpacity
+          onPress={() => navigation.navigate('Principal')}
+          style={styles.botaoInicio}
+          activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel="Voltar para a página inicial"
+        >
+          <Ionicons
+            name="home-outline"
+            size={19}
+            color="#fff"
+          />
+
+          <Text style={styles.botaoInicioTexto}>
+            INÍCIO
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           onPress={() => setConfirmandoSair(true)}
           style={styles.botaoSair}
           disabled={saindo}
@@ -319,6 +337,26 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.8)',
     fontSize: 13,
     marginTop: 2,
+  },
+
+    botaoInicio: {
+    minHeight: 38,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.16)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.25)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+
+  botaoInicioTexto: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.5,
   },
 
   botaoSair: {

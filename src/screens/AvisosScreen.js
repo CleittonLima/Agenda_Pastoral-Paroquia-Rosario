@@ -4,7 +4,6 @@ import {
   Text,
   FlatList,
   StyleSheet,
-  RefreshControl,
 } from 'react-native';
 import { useApp } from '../context/AppContext';
 import { formatarDataBR } from '../utils/datas';
@@ -72,13 +71,6 @@ export default function AvisosScreen() {
         data={itens}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.lista}
-        refreshControl={
-          <RefreshControl
-            refreshing={atualizando}
-            onRefresh={aoAtualizar}
-            colors={[temaCores.corBotoes]}
-          />
-        }
         ListEmptyComponent={
           <Text
             style={[

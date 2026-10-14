@@ -1,18 +1,18 @@
 {
   "expo": {
-    "name": "ParoquiaRosario",
+    "name": "N. Sra. do Rosário",
     "slug": "cleiton",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/logos/brasao1.png",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#800020",
-        "foregroundImage": "./assets/logos/brasao1.png",
+        "backgroundColor": "#FFFFFF",
+        "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },

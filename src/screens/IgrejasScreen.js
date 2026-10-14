@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import {
   View, Text, FlatList, StyleSheet, Image, TouchableOpacity,
-  Modal, ScrollView, Linking, RefreshControl, ActivityIndicator,
+  Modal, ScrollView, Linking, ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../context/AppContext';
@@ -273,13 +273,7 @@ export default function IgrejasScreen() {
         data={dados.igrejas}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.lista}
-        refreshControl={
-          <RefreshControl
-            refreshing={atualizando}
-            onRefresh={aoAtualizar}
-            colors={[temaCores.corBotoes]}
-          />
-        }
+
         ListEmptyComponent={
           <Text
             style={[
