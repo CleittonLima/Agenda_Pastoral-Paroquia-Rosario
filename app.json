@@ -1,5 +1,6 @@
 {
   "expo": {
+    "experiments": { "baseUrl": "/Agenda_Pastoral-Paroquia-Rosario" },
     "name": "N. Sra. do Rosário",
     "slug": "cleiton",
     "version": "1.0.0",
